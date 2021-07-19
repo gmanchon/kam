@@ -167,11 +167,12 @@ def migrate():
     # iterate through code migrations
     required_migrations = [m for m in code_migrations if migration_timestamp(m) > max_migration]
 
-    print(code_migrations)
-    print(required_migrations)
-
     # process migrations
-    for migration in required_migrations:
+    migration_count = len(required_migrations)
+
+    for index, migration in enumerate(required_migrations):
+
+        print(f"\nrun migration {migration} ({index + 1}/{migration_count})")
 
         # run migration
         migration_successful = run_migration(db_instance, migration)

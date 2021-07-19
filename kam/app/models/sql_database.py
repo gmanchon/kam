@@ -91,7 +91,7 @@ class SqlDatabase(BaseDatabase):
         # check migrations table existence
         if not self.migrations_table_exists():
 
-            print("create migrations table")
+            print("\ncreate migrations table")
             self.create_migrations_table()
 
         # retrieve migrations
