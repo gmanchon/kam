@@ -100,8 +100,7 @@ def migrate():
     max_migration = max(db_migrations)
 
     # iterate through code migrations
-    required = [m for m in code_migrations if os.path.basename(m).split("_")[0] > max_migration]
+    required_migrations = [m for m in code_migrations if os.path.basename(m).split("_")[0] > max_migration]
 
-    print(db_migrations)
-    print(code_migrations)
-    print(required)
+    # process migrations
+    print(required_migrations)
