@@ -1,4 +1,7 @@
 
+from kam.app.models.yaml_database import YamlDatabase
+from kam.app.models.sql_database import SqlDatabase
+
 from kam.app.views.conventions import (
     get_db_params_path,
     get_db_migrations_path)
@@ -38,10 +41,24 @@ def __load_db_params():
     db_type = __load_param(db_params_path, db_parameters, "type")
     db_params = __load_param(db_params_path, db_parameters, "params")
 
-    # build migrations path
-    migrations_path = get_db_migrations_path()
+    return db_type, db_params
 
-    return db_type, db_params, migrations_path
+
+def instantiate_db():
+    """
+    return application db instance
+    """
+
+    # load db params
+    db_type, db_params = __load_db_params()
+
+    # instanciate database
+    if db_type == "yaml":
+        db_instance = YamlDatabase(db_params)
+    elif db_type == "sql":
+        db_instance = SqlDatabase(db_params)
+
+    return db_instance
 
 
 def migrate():
@@ -49,10 +66,13 @@ def migrate():
     migrate database
     """
 
-    # load db params
-    db_type, db_params, migrations_path = __load_db_params()
+    # create db instance
+    db_instance = instantiate_db()
 
-    print(db_type, db_params, migrations_path)
+    # retrieve current migration
+    db_instance.migrate()
 
-    print("migrate")
-    pass
+    # build migrations path
+    migrations_path = get_db_migrations_path()
+
+    print(migrations_path)
