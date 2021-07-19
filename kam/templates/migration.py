@@ -1,5 +1,5 @@
 
-from kam.app.models.active_record import ActiveRecordMigration
+from kam.app.models.active_record_migration import ActiveRecordMigration
 
 
 class Create{{model_name}}(ActiveRecordMigration):

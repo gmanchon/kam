@@ -1,5 +1,5 @@
 
-from kam.app.models import BaseDatabase
+from kam.app.models.base_database import BaseDatabase
 
 
 class ActiveRecordMigration():

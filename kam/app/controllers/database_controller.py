@@ -10,6 +10,8 @@ import os
 import glob
 import yaml
 
+import importlib
+
 
 def __load_param(db_params_path, conf, key):
     """
@@ -102,17 +104,36 @@ def migration_klass_name_from_filename(migration_path):
     return migration_klass_name
 
 
-def run_migration(migration_path):
+def process_module_path(migration_path):
+    """
+    process module path
+    """
+
+    # TODO: kampai to determine project path
+    # process module and submodules
+    return os.path.splitext(migration_path)[0].replace(os.sep, ".")
+
+
+def run_migration(db_instance, migration_path):
     """
     run migration
     """
 
     # build migration klass name
-    migration_klass_name = migration_klass_name_from_filename(migration_path)
-    print(migration_klass_name)
+    migration_klass = migration_klass_name_from_filename(migration_path)
+
+    # process module and submodules
+    module_path = process_module_path(migration_path)
 
     # load class
     # from https://stackoverflow.com/questions/4821104/dynamic-instantiation-from-string-name-of-a-class-in-dynamically-imported-module
+    MigrationKlass = getattr(importlib.import_module(module_path), migration_klass)
+
+    # instantitate class
+    migration_instance = MigrationKlass(db_instance)
+
+    # unused
+    migration_instance
 
 
 def migrate():
@@ -139,4 +160,4 @@ def migrate():
     for migration in required_migrations:
 
         # run migration
-        run_migration(migration)
+        run_migration(db_instance, migration)

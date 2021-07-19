@@ -86,9 +86,7 @@ class SqlDatabase(BaseDatabase):
 
         # query
         create_migrations_table = """
-        CREATE TABLE schema_migrations (
-          version TEXT
-        );
+        SELECT * FROM schema_migrations;
         """
 
         # create migrations table
