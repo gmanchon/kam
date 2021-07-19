@@ -6,6 +6,8 @@ from kam.app.views.conventions import (
     get_db_params_path,
     get_db_migrations_path)
 
+import os
+import glob
 import yaml
 
 
@@ -61,6 +63,25 @@ def instantiate_db():
     return db_instance
 
 
+def retrieve_code_migrations():
+    """
+    retrieve migrations list
+    """
+
+    # build migrations path
+    migrations_path = get_db_migrations_path()
+
+    # build migrations pattern
+    migrations_pattern = os.path.join(
+        migrations_path,
+        "*")
+
+    # list migrations
+    migration_files = glob.glob(migrations_pattern)
+
+    return migration_files
+
+
 def migrate():
     """
     migrate database
@@ -72,7 +93,7 @@ def migrate():
     # retrieve current migration
     db_instance.migrate()
 
-    # build migrations path
-    migrations_path = get_db_migrations_path()
+    # retrieve migrations
+    migrations = retrieve_code_migrations()
 
-    print(migrations_path)
+    print(migrations)
