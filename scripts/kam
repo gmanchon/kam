@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from kam.app.controllers.model_controller import create
+
 import click
 
 
@@ -20,9 +22,9 @@ def generate():
 @click.argument(
     "columns",
     nargs=-1)
-def generate_model():
+def generate_model(table, columns):
 
-    pass
+    create(table, columns)
 
 
 @generate.command("migration")
