@@ -82,12 +82,37 @@ def retrieve_code_migrations():
     return migration_files
 
 
+def migration_klass_name_from_filename(migration_path):
+    """
+    process migration klass name from filename
+    """
+
+    # process basename
+    migration_basename = os.path.basename(migration_path)
+
+    # process raw filename (remove extension)
+    migration_raw_filename = os.path.splitext(migration_basename)[0]
+
+    # remove timestamp
+    migration_content = migration_raw_filename.split("_")[1:]
+
+    # process klass name
+    migration_klass_name = "".join([w.capitalize() for w in migration_content])
+
+    return migration_klass_name
+
+
 def run_migration(migration_path):
     """
     run migration
     """
 
-    print(migration_path)
+    # build migration klass name
+    migration_klass_name = migration_klass_name_from_filename(migration_path)
+    print(migration_klass_name)
+
+    # load class
+    # from https://stackoverflow.com/questions/4821104/dynamic-instantiation-from-string-name-of-a-class-in-dynamically-imported-module
 
 
 def migrate():
