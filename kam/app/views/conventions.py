@@ -16,11 +16,11 @@ def table_to_model_python_file_path(model_name):
     """
 
     # TODO: kampai to determine project path
-    return os.path.join(
+    return os.path.relpath(os.path.join(
         os.path.dirname(__file__),
         "..",
         "..",
         "..",
         "certif",
         "models",
-        table_to_model_python_file(model_name))
+        table_to_model_python_file(model_name)))
