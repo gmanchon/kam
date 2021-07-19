@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import click
+
+
+@click.group()
+def kam():
+    pass
+
+
+@click.group()
+def generate():
+    pass
+
+
+@generate.command("model")
+@click.argument(
+    "table")
+@click.argument(
+    "columns",
+    nargs=-1)
+def generate_model():
+
+    pass
+
+
+@generate.command("migration")
+@click.argument(
+    "name")
+@click.argument(
+    "columns",
+    nargs=-1)
+def generate_migration():
+
+    pass
+
+
+@click.command("db:drop")
+def db_drop():
+
+    pass
+
+
+@click.command("db:create")
+def db_create():
+
+    pass
+
+
+@click.command("db:migrate")
+def db_migrate():
+
+    pass
+
+
+@click.command("db:seed")
+def db_seed():
+
+    pass
+
+
+@click.command("db:rollback")
+def db_rollback():
+
+    pass
+
+
+@click.command("db:reset")
+def db_reset():
+
+    pass
+
+
+if __name__ == '__main__':
+    kam.add_command(generate)
+    kam.add_command(db_drop)
+    kam.add_command(db_create)
+    kam.add_command(db_migrate)
+    kam.add_command(db_seed)
+    kam.add_command(db_rollback)
+    kam.add_command(db_reset)
+    kam()
