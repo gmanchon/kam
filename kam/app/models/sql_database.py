@@ -1,6 +1,8 @@
 
 from kam.app.models.base_database import BaseDatabase
 
+from kam.app.views.conventions import pluralize
+
 import uuid
 
 import psycopg2
@@ -105,7 +107,7 @@ class SqlDatabase(BaseDatabase):
             elif data_type == "integer":
                 statements.append(f"{column} INT64 NULL")
             elif data_type == "references":
-                statements.append(f"{column} BIGSERIAL NOT NULL")
+                statements.append(f"{column}_id BIGSERIAL NOT NULL")
 
         # add timestamps
         if timestamps:
@@ -127,7 +129,7 @@ class SqlDatabase(BaseDatabase):
                 statements.append(
                     f"CONSTRAINT fk_kam_{unique_fk_id} "
                     + f"FOREIGN KEY ({column}_id) "
-                    + f"REFERENCES public.{column}(id)")
+                    + f"REFERENCES public.{pluralize(column)}(id)")
 
         # add table end
         statements.append(");")
@@ -139,12 +141,16 @@ class SqlDatabase(BaseDatabase):
             + ",\n".join(statements[1:-1])
             + statements[-1])
 
+        print()
         print(create_migrations_table)
-        exit()
 
         # create migrations table
         cur = self.conn.cursor()
         cur.execute(create_migrations_table)  # create table does not seem to support prepared statements
+
+        # TODO: update migration table
+
+
 
         # commit
         self.conn.commit()
