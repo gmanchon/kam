@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from kam.app.controllers.model_controller import create
+from kam.app.controllers.database_controller import migrate
 
 import click
 
@@ -53,7 +54,7 @@ def db_create():
 @click.command("db:migrate")
 def db_migrate():
 
-    pass
+    migrate()
 
 
 @click.command("db:seed")
