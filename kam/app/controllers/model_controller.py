@@ -1,4 +1,7 @@
 
+from jinja2 import Environment, PackageLoader, select_autoescape
+
+
 DATA_TYPE_STRING = "string"
 DATA_TYPE_INTEGER = "integer"
 DATA_TYPE_REFERENCES = "references"
@@ -9,7 +12,7 @@ SUPPORTED_DATA_TYPES = [
     DATA_TYPE_REFERENCES]
 
 
-def create(table, columns):
+def create(table, column_types):
     """
     create model code
     """
@@ -21,10 +24,10 @@ def create(table, columns):
     print(f"{table}:")
 
     # validate column parameters
-    for column_parameter in columns:
+    for column_type in column_types:
 
         # retrieve column and data type
-        column, data_type = column_parameter.split(":")
+        column, data_type = column_type.split(":")
 
         # validate column case
         if column != column.lower():
@@ -35,3 +38,24 @@ def create(table, columns):
             raise ValueError(f"Invalid data type {data_type}, supported: {', '.join(SUPPORTED_DATA_TYPES)} 🤒")
 
         print(f"- {column} ({data_type})")
+
+    # create templating environment
+    env = Environment(
+        loader=PackageLoader("kam"),
+        autoescape=select_autoescape()
+    )
+
+    # retrieve model template
+    model_template = env.get_template("model.py")
+
+    # convert params
+    table_column_types = {c: t for c, t in [ct.split(":") for ct in column_types]}
+
+    print(table_column_types)
+
+    # apply template
+    model_code = model_template.render(
+        table=table,
+        column_types=table_column_types)
+
+    print(model_code)

@@ -20,11 +20,11 @@ def generate():
 @click.argument(
     "table")
 @click.argument(
-    "columns",
+    "column_types",
     nargs=-1)
-def generate_model(table, columns):
+def generate_model(table, column_types):
 
-    create(table, columns)
+    create(table, column_types)
 
 
 @generate.command("migration")
