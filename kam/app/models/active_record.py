@@ -1,8 +1,4 @@
 
-class ActiveRecordMigration():
+class ActiveRecord():
 
-    def create_table(self):
-
-        print("TODO ACTIVE RECORD MIGRATION")
-
-        pass
+    pass
