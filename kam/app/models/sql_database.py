@@ -151,18 +151,18 @@ class SqlDatabase(BaseDatabase):
         statements.append(");")
 
         # close lines with commas
-        create_migrations_table = (
+        create_table = (
             statements[0]
             + "\n"
             + ",\n".join(statements[1:-1])
             + statements[-1])
 
         print()
-        print(create_migrations_table)
+        print(create_table)
 
         # create migrations table
         cur = self.conn.cursor()
-        cur.execute(create_migrations_table)  # create table does not seem to support prepared statements
+        cur.execute(create_table)  # create table does not seem to support prepared statements
 
         # commit
         self.conn.commit()
