@@ -78,3 +78,22 @@ class SqlDatabase(BaseDatabase):
         migrations = self.retrieve_migrations()
 
         return migrations
+
+    def create_table(self, table_name, columns):
+        """
+        called by active record migration
+        """
+
+        # query
+        create_migrations_table = """
+        CREATE TABLE schema_migrations (
+          version TEXT
+        );
+        """
+
+        # create migrations table
+        cur = self.conn.cursor()
+        cur.execute(create_migrations_table)
+
+        # commit
+        self.conn.commit()

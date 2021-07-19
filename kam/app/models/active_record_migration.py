@@ -1,8 +1,24 @@
 
+from kam.app.models import BaseDatabase
+
+
 class ActiveRecordMigration():
 
-    def create_table(self):
+    def __init__(self, db_instance: BaseDatabase):
+        """
+        called when the migration is instantiated
+        """
 
-        print("TODO ACTIVE RECORD MIGRATION")
+        # store database
+        self.db_instance = db_instance
 
-        pass
+        # call children class change method
+        self.change()
+
+    def create_table(self, table_name, columns):
+        """
+        called by the child class if the migration creates a table
+        """
+
+        # create table
+        self.db_instance.create_table(table_name, columns)

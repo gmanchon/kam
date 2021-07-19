@@ -82,6 +82,14 @@ def retrieve_code_migrations():
     return migration_files
 
 
+def run_migration(migration_path):
+    """
+    run migration
+    """
+
+    print(migration_path)
+
+
 def migrate():
     """
     migrate database
@@ -103,4 +111,7 @@ def migrate():
     required_migrations = [m for m in code_migrations if os.path.basename(m).split("_")[0] > max_migration]
 
     # process migrations
-    print(required_migrations)
+    for migration in required_migrations:
+
+        # run migration
+        run_migration(migration)
