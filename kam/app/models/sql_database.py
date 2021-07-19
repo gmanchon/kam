@@ -66,7 +66,7 @@ class SqlDatabase(BaseDatabase):
 
         return migrations
 
-    def migrate(self):
+    def migrations(self):
 
         # check migrations table existence
         if not self.migrations_table_exists():
@@ -77,4 +77,4 @@ class SqlDatabase(BaseDatabase):
         # retrieve migrations
         migrations = self.retrieve_migrations()
 
-        print(migrations)
+        return migrations

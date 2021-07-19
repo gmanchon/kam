@@ -91,7 +91,9 @@ def migrate():
     db_instance = instantiate_db()
 
     # retrieve current migration
-    db_instance.migrate()
+    db_migrations = db_instance.migrations()
+
+    print(db_migrations)
 
     # retrieve migrations
     migrations = retrieve_code_migrations()
