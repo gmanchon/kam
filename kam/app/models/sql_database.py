@@ -1,6 +1,8 @@
 
 from kam.app.models.base_database import BaseDatabase
 
+import uuid
+
 import psycopg2
 
 
@@ -84,14 +86,65 @@ class SqlDatabase(BaseDatabase):
         called by active record migration
         """
 
+        # build column list
+        column_list = {k: v for k, v in columns.items() if k != "timestamps"}
+
+        # retrieve timestamps
+        timestamps = columns.get("timestamps", True)
+
         # query
-        create_migrations_table = """
-        SELECT * FROM schema_migrations;
-        """
+        statements = [
+            f"CREATE TABLE {table_name} (",
+            "id BIGSERIAL NOT NULL"]
+
+        # add columns
+        for column, data_type in column_list.items():
+
+            if data_type == "string":
+                statements.append(f"{column} VARCHAR NULL")
+            elif data_type == "integer":
+                statements.append(f"{column} INT64 NULL")
+            elif data_type == "references":
+                statements.append(f"{column} BIGSERIAL NOT NULL")
+
+        # add timestamps
+        if timestamps:
+
+            statements.append("created_at TIMESTAMP NOT NULL")
+            statements.append("updated_at TIMESTAMP NOT NULL")
+
+        # add constraints
+        statements.append(f"CONSTRAINT {table_name}_pkey PRIMARY KEY (id)")
+
+        # add foreign keys
+        for column, data_type in column_list.items():
+
+            if data_type == "references":
+
+                # generate fk unique id
+                unique_fk_id = uuid.uuid4().hex
+
+                statements.append(
+                    f"CONSTRAINT fk_kam_{unique_fk_id} "
+                    + f"FOREIGN KEY ({column}_id) "
+                    + f"REFERENCES public.{column}(id)")
+
+        # add table end
+        statements.append(");")
+
+        # close lines with commas
+        create_migrations_table = (
+            statements[0]
+            + "\n"
+            + ",\n".join(statements[1:-1])
+            + statements[-1])
+
+        print(create_migrations_table)
+        exit()
 
         # create migrations table
         cur = self.conn.cursor()
-        cur.execute(create_migrations_table)
+        cur.execute(create_migrations_table)  # create table does not seem to support prepared statements
 
         # commit
         self.conn.commit()
