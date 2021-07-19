@@ -1,4 +1,6 @@
 
+from kam.app.views.conventions import table_to_model_python_file_path
+
 from jinja2 import Environment, PackageLoader, select_autoescape
 
 
@@ -12,7 +14,7 @@ SUPPORTED_DATA_TYPES = [
     DATA_TYPE_REFERENCES]
 
 
-def create(table, column_types):
+def create(table, instance_variables):
     """
     create model code
     """
@@ -24,7 +26,7 @@ def create(table, column_types):
     print(f"{table}:")
 
     # validate column parameters
-    for column_type in column_types:
+    for column_type in instance_variables:
 
         # retrieve column and data type
         column, data_type = column_type.split(":")
@@ -49,7 +51,7 @@ def create(table, column_types):
     model_template = env.get_template("model.py")
 
     # convert params
-    table_column_types = {c: t for c, t in [ct.split(":") for ct in column_types]}
+    table_column_types = {c: t for c, t in [ct.split(":") for ct in instance_variables]}
 
     print(table_column_types)
 
@@ -58,4 +60,9 @@ def create(table, column_types):
         table=table,
         column_types=table_column_types)
 
-    print(model_code)
+    # build model path
+    model_target_path = table_to_model_python_file_path(table)
+
+    # write model
+    with open(model_target_path, "w") as file:
+        file.write(model_code)

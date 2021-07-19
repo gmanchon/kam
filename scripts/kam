@@ -18,13 +18,13 @@ def generate():
 
 @generate.command("model")
 @click.argument(
-    "table")
+    "model_name")
 @click.argument(
-    "column_types",
+    "instance_variables",
     nargs=-1)
-def generate_model(table, column_types):
+def generate_model(model_name, instance_variables):
 
-    create(table, column_types)
+    create(model_name, instance_variables)
 
 
 @generate.command("migration")
