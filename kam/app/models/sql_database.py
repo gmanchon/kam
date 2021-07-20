@@ -175,16 +175,16 @@ class SqlDatabase(BaseDatabase):
 
         # query
         statements = [
-            f"CREATE TABLE {table_name} (",
+            f"CREATE TABLE \"{table_name}\" (",
             "id BIGSERIAL NOT NULL"]
 
         # add columns
         for column, data_type in column_list.items():
 
             if data_type == "string":
-                statements.append(f"{column} VARCHAR NULL")
+                statements.append(f"\"{column}\" VARCHAR NULL")
             elif data_type == "integer":
-                statements.append(f"{column} INT64 NULL")
+                statements.append(f"\"{column}\" INT64 NULL")
             elif data_type == "references":
                 statements.append(f"{column}_id BIGSERIAL NOT NULL")
 
