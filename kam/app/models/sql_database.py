@@ -85,6 +85,39 @@ class SqlDatabase(BaseDatabase):
         # reset autocommit
         self.conn.autocommit = False
 
+    def initialize_database(self):
+        """
+        initialize database
+        """
+
+        # create timestamps trigger
+        self.create_database_timestamps_trigger_function()
+
+    def create_database_timestamps_trigger_function(self):
+        """
+        create timestamps trigger
+        """
+
+        # query
+        db_timestamps_trigger = (
+            "CREATE OR REPLACE FUNCTION trigger_set_timestamp()"
+            + "\nRETURNS TRIGGER AS $$"
+            + "\nBEGIN"
+            + "\n  NEW.updated_at = NOW();"
+            + "\n  RETURN NEW;"
+            + "\nEND;"
+            + "\n$$ LANGUAGE plpgsql;")
+
+        print()
+        print(db_timestamps_trigger)
+
+        # create trigger
+        cur = self.conn.cursor()
+        cur.execute(db_timestamps_trigger)
+
+        # commit
+        self.conn.commit()
+
     def migrations_table_exists(self):
 
         # query
@@ -191,8 +224,8 @@ class SqlDatabase(BaseDatabase):
         # add timestamps
         if timestamps:
 
-            statements.append("created_at TIMESTAMP NOT NULL")
-            statements.append("updated_at TIMESTAMP NOT NULL")
+            statements.append("created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()")
+            statements.append("updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()")
 
         # add constraints
         statements.append(f"CONSTRAINT {table_name}_pkey PRIMARY KEY (id)")
@@ -226,6 +259,32 @@ class SqlDatabase(BaseDatabase):
         # create migrations table
         cur = self.conn.cursor()
         cur.execute(create_table)  # create table does not seem to support prepared statements
+
+        # commit
+        self.conn.commit()
+
+        # create table timestamps trigger
+        if timestamps:
+
+            self.add_table_timestamps_trigger(table_name)
+
+    def add_table_timestamps_trigger(self, table_name):
+        """
+        add trigger for table timestamps
+        """
+
+        table_triggers_query = (
+            "CREATE TRIGGER set_timestamp"
+            + f"\nBEFORE UPDATE ON {table_name}"
+            + "\nFOR EACH ROW"
+            + "\nEXECUTE PROCEDURE trigger_set_timestamp();")
+
+        print()
+        print(table_triggers_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor()
+        cur.execute(table_triggers_query)
 
         # commit
         self.conn.commit()

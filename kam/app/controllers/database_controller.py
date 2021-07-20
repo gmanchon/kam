@@ -88,6 +88,12 @@ def create_database():
     # create database
     db_instance.create_database()
 
+    # init db instance
+    init_db_instance = instantiate_db()
+
+    # init database
+    init_db_instance.initialize_database()
+
 
 def retrieve_code_migrations():
     """
