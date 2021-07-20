@@ -5,6 +5,7 @@ from kam.app.controllers.model_controller import create
 from kam.app.controllers.database_controller import (
     create_database,
     drop_database,
+    dump_schema,
     migrate,
     seed)
 
@@ -55,6 +56,12 @@ def db_create():
     create_database()
 
 
+@click.command("db:schema:dump")
+def db_schema_dump():
+
+    dump_schema()
+
+
 @click.command("db:migrate")
 def db_migrate():
 
@@ -83,8 +90,9 @@ if __name__ == '__main__':
     kam.add_command(generate)
     kam.add_command(db_drop)
     kam.add_command(db_create)
+    kam.add_command(db_schema_dump)
     kam.add_command(db_migrate)
-    kam.add_command(db_seed)
     kam.add_command(db_rollback)
+    kam.add_command(db_seed)
     kam.add_command(db_reset)
     kam()

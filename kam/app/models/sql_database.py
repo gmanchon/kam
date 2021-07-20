@@ -118,6 +118,34 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
+    def dump_schema(self):
+        """
+        dump database schema
+        """
+
+        # query
+        query_schema = (
+            "SELECT *"
+            + "\nFROM information_schema.columns"
+            + f"\nWHERE table_catalog = '{self.dbname}'"
+            + "\nand table_schema = 'public'")
+
+        print()
+        print(query_schema)
+
+        # create trigger
+        cur = self.conn.cursor()
+        cur.execute(query_schema)
+
+        # fetch results
+        table_columns = cur.fetchall()
+
+        print(table_columns)
+
+        # TODO: dump DB schema from sql query
+
+        # TODO: retrieve column types from DB schema
+
     def migrations_table_exists(self):
 
         # query

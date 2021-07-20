@@ -95,6 +95,18 @@ def create_database():
     init_db_instance.initialize_database()
 
 
+def dump_schema():
+    """
+    dump database schema in db/schema.py
+    """
+
+    # create db instance
+    db_instance = instantiate_db()
+
+    # create database
+    db_instance.dump_schema()
+
+
 def retrieve_code_migrations():
     """
     retrieve migrations list
