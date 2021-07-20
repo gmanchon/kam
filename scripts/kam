@@ -60,14 +60,14 @@ def db_migrate():
     migrate()
 
 
-@click.command("db:seed")
-def db_seed():
+@click.command("db:rollback")
+def db_rollback():
 
     pass
 
 
-@click.command("db:rollback")
-def db_rollback():
+@click.command("db:seed")
+def db_seed():
 
     pass
 
