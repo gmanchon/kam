@@ -25,7 +25,7 @@ rails generate model Restaurant name:string rating:integer
 kam generate model Assessment name:string enterprise:string
 
 kam generate model Skill name:string assessment:references
-kam generate model Credit name:string type:string skill:references
+kam generate model Credit name:string desc:string skill:references
 kam generate model Validation desc:string credit:references
 
 kam generate model Session name:string assessment:references
