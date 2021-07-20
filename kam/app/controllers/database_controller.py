@@ -209,3 +209,16 @@ def migrate():
 
         # mark migration as done
         db_instance.mark_migration_done(migration_timestamp(migration))
+
+
+def seed():
+    """
+    seed the database
+    """
+
+    # create db instance
+    db_instance = instantiate_db()
+
+    # run the seed
+    # TODO: run the seed
+    print("seed")

@@ -5,7 +5,8 @@ from kam.app.controllers.model_controller import create
 from kam.app.controllers.database_controller import (
     create_database,
     drop_database,
-    migrate)
+    migrate,
+    seed)
 
 import click
 
@@ -69,7 +70,7 @@ def db_rollback():
 @click.command("db:seed")
 def db_seed():
 
-    pass
+    seed()
 
 
 @click.command("db:reset")
