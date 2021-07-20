@@ -305,3 +305,61 @@ class SqlDatabase(BaseDatabase):
 
         # commit
         self.conn.commit()
+
+    def insert(self, table_name, columns):
+        """
+        called by active record
+        """
+
+        # query
+        insert_query = f"INSERT INTO {table_name} ("
+
+        # iterate through column names
+        column_names = []
+
+        for column in columns.keys():
+
+            column_names.append(f"\"{column}\"")
+
+        insert_query += ", ".join(column_names)
+
+        # add separator
+        insert_query += "\n) VALUES ("
+
+        # iterate through column values
+        column_values = []
+
+        for value in columns.values():
+
+            column_values.append(f"'{value}'")
+
+        insert_query += ", ".join(column_values)
+
+        # add end
+        insert_query += "\n);"
+
+        print(insert_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor()
+        cur.execute(insert_query)
+
+        # commit
+        self.conn.commit()
+
+    def update(self, table_name, columns):
+        """
+        called by active record
+        """
+
+        # query
+        update_query = f"UPDATE {table_name};"
+
+        print(update_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor()
+        cur.execute(update_query)
+
+        # commit
+        self.conn.commit()
