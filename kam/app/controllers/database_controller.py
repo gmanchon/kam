@@ -219,6 +219,27 @@ def seed():
     # create db instance
     db_instance = instantiate_db()
 
+    # TODO: kampai to determine project path
+    # build seed location
+    seed_path = os.path.relpath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "certif",
+        "db",
+        "seed.py"))
+
+    # build module name
+    module_name = seed_path.replace(os.sep, '.')
+
+    # load script
+    # from https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
+    spec = importlib.util.spec_from_file_location(module_name, seed_path)
+    module = importlib.util.module_from_spec(spec)
+
     # run the seed
-    # TODO: run the seed
-    print("seed")
+    spec.loader.exec_module(module)
+
+    # TODO: link DB
+    db_instance
