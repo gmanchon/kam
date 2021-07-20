@@ -229,3 +229,20 @@ class SqlDatabase(BaseDatabase):
 
         # commit
         self.conn.commit()
+
+    def destroy_all(self, table_name):
+        """
+        called by active record
+        """
+
+        # query
+        destroy_all_query = f"DELETE FROM {table_name};"
+
+        print(destroy_all_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor()
+        cur.execute(destroy_all_query)
+
+        # commit
+        self.conn.commit()

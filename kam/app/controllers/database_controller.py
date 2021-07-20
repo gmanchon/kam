@@ -216,9 +216,6 @@ def seed():
     seed the database
     """
 
-    # create db instance
-    db_instance = instantiate_db()
-
     # TODO: kampai to determine project path
     # build seed location
     seed_path = os.path.relpath(os.path.join(
@@ -240,6 +237,3 @@ def seed():
 
     # run the seed
     spec.loader.exec_module(module)
-
-    # TODO: link DB
-    db_instance

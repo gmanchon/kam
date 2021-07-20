@@ -105,3 +105,11 @@ def model_migration_file_path(model_name):
         "db",
         "migrate",
         model_migration_file(model_name)))
+
+
+def model_to_db_table(model_name):
+    """
+    build db table name from model name
+    """
+
+    return pluralize(model_name.lower())
