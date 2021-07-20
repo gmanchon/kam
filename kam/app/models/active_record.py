@@ -41,7 +41,7 @@ class ActiveRecord():
         cols = {k: v for k, v in self.__dict__.items() if k != "id"}
 
         # check whether object was persisted
-        if self.id is not None:
+        if self.id is None:
 
             # insert object
             self.db.insert(table_name, cols)
