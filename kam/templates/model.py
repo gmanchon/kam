@@ -1,5 +1,8 @@
 
-class {{model_name}}():
+from kam.app.models.active_record import ActiveRecord
+
+
+class {{model_name}}(ActiveRecord):
 
     def __init__(self, **kwargs):
 
