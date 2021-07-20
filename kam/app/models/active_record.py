@@ -37,11 +37,11 @@ class ActiveRecord():
         child_klass_name = type(self).__name__
         table_name = model_to_db_table(child_klass_name)
 
-        # check whether object was persisted
-        if self.id is None:
+        # remove id from columns
+        cols = {k: v for k, v in self.__dict__.items() if k != "id"}
 
-            # remove id from columns
-            cols = {k: v for k, v in self.__dict__.items() if k != "id"}
+        # check whether object was persisted
+        if self.id is not None:
 
             # insert object
             self.db.insert(table_name, cols)
@@ -49,4 +49,4 @@ class ActiveRecord():
         else:
 
             # update object
-            self.db.update(table_name, self.__dict__)
+            self.db.update(table_name, self.id, cols)

@@ -347,13 +347,25 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
-    def update(self, table_name, columns):
+    def update(self, table_name, id, columns):
         """
         called by active record
         """
 
         # query
-        update_query = f"UPDATE {table_name};"
+        update_query = f"UPDATE {table_name} SET"
+
+        # iterate through columns
+        update_rows = []
+
+        for column, value in columns.items():
+
+            update_rows.append(f"\n\"{column}\" = '{value}'")
+
+        update_query += ", ".join(update_rows)
+
+        # add separator
+        update_query += f"\nWHERE id = {id};"
 
         print(update_query)
 
