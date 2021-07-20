@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 from kam.app.controllers.model_controller import create
-from kam.app.controllers.database_controller import migrate
+from kam.app.controllers.database_controller import (
+    create_database,
+    drop_database,
+    migrate)
 
 import click
 
@@ -42,13 +45,13 @@ def generate_migration():
 @click.command("db:drop")
 def db_drop():
 
-    pass
+    drop_database()
 
 
 @click.command("db:create")
 def db_create():
 
-    pass
+    create_database()
 
 
 @click.command("db:migrate")

@@ -48,7 +48,7 @@ def __load_db_params():
     return db_type, db_params
 
 
-def instantiate_db():
+def instantiate_db(no_schema=False):
     """
     return application db instance
     """
@@ -60,9 +60,33 @@ def instantiate_db():
     if db_type == "yaml":
         db_instance = YamlDatabase(db_params)
     elif db_type == "sql":
-        db_instance = SqlDatabase(db_params)
+        db_instance = SqlDatabase(db_params, no_schema=no_schema)
 
     return db_instance
+
+
+def drop_database():
+    """
+    drop database, no confirmations
+    """
+
+    # create db instance
+    db_instance = instantiate_db(no_schema=True)
+
+    # drop database
+    db_instance.drop_database()
+
+
+def create_database():
+    """
+    create database
+    """
+
+    # create db instance
+    db_instance = instantiate_db(no_schema=True)
+
+    # create database
+    db_instance.create_database()
 
 
 def retrieve_code_migrations():

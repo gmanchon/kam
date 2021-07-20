@@ -10,17 +10,80 @@ import psycopg2
 
 class SqlDatabase(BaseDatabase):
 
-    def __init__(self, params):
+    def __init__(self, params, no_schema=False):
 
         # retrieve params
         self.params = params
         self.connection_params = params.get("connection", {})
 
+        # retrieve db name and user
+        self.host = self.connection_params.get("host")
+        self.port = self.connection_params.get("port")
+        self.dbname = self.connection_params.get("dbname")
+        self.user = self.connection_params.get("user")
+        self.password = self.connection_params.get("password")
+
         # create database connection
-        self.conn = psycopg2.connect(**self.connection_params)
+        if not no_schema:
+
+            # connect to schema
+            self.conn = psycopg2.connect(**self.connection_params)
+
+        else:
+
+            # connect without specifying the database schema (create and drop db)
+            self.conn = psycopg2.connect(
+                host=self.host,
+                port=self.port,
+                dbname="postgres",
+                user=self.user,
+                password=self.password)
 
         # call base init
         super().__init__(params)
+
+    def drop_database(self):
+        """
+        drop database
+        """
+
+        # query
+        drop_database_query = f"DROP DATABASE IF EXISTS {self.dbname};"
+
+        print()
+        print(drop_database_query)
+
+        # cannot drop inside of a transaction
+        self.conn.autocommit = True
+
+        # drop database
+        cur = self.conn.cursor()
+        cur.execute(drop_database_query)
+
+        # reset autocommit
+        self.conn.autocommit = False
+
+    def create_database(self):
+        """
+        create database
+        """
+
+        # query
+        create_database_query = f"CREATE DATABASE {self.dbname}" \
+            + f"\nWITH OWNER = {self.user};"
+
+        print()
+        print(create_database_query)
+
+        # cannot drop inside of a transaction
+        self.conn.autocommit = True
+
+        # drop database
+        cur = self.conn.cursor()
+        cur.execute(create_database_query)
+
+        # reset autocommit
+        self.conn.autocommit = False
 
     def migrations_table_exists(self):
 
