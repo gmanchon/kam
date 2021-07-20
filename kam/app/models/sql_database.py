@@ -125,10 +125,11 @@ class SqlDatabase(BaseDatabase):
 
         # query
         query_schema = (
-            "SELECT *"
+            "SELECT table_name, ordinal_position, column_name, is_nullable, udt_name"
             + "\nFROM information_schema.columns"
             + f"\nWHERE table_catalog = '{self.dbname}'"
-            + "\nand table_schema = 'public'")
+            + "\nAND table_schema = 'public'"
+            + "\nORDER BY table_name, ordinal_position;")
 
         print()
         print(query_schema)
