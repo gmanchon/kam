@@ -44,7 +44,7 @@ class ActiveRecord():
         if self.id is None:
 
             # insert object
-            self.db.insert(table_name, cols)
+            self.db.insert(table_name, self, cols)
 
         else:
 

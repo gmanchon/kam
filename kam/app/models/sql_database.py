@@ -306,7 +306,7 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
-    def insert(self, table_name, columns):
+    def insert(self, table_name, active_record, columns):
         """
         called by active record
         """
@@ -336,13 +336,17 @@ class SqlDatabase(BaseDatabase):
         insert_query += ", ".join(column_values)
 
         # add end
-        insert_query += "\n);"
+        insert_query += "\n) RETURNING id;"
 
         print(insert_query)
 
         # retrieve migrations
         cur = self.conn.cursor()
         cur.execute(insert_query)
+
+        # retrieve inserted id
+        insert_res = cur.fetchone()
+        active_record.id = insert_res[0]
 
         # commit
         self.conn.commit()
