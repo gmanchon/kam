@@ -3,6 +3,8 @@ import os
 
 from datetime import datetime
 
+from wagon_common.helpers.git.repo import get_git_top_level_directory
+
 
 def pluralize(model_name):
     """
@@ -27,13 +29,11 @@ def get_db_params_path():
     build db params path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "config",
         "database.yml"))
 
@@ -43,13 +43,11 @@ def get_db_migrations_path():
     build db migrations path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "migrate"))
 
@@ -67,13 +65,11 @@ def model_code_file_path(model_name):
     build model code file path from model name
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "models",
         model_code_file(model_name)))
 
@@ -95,13 +91,11 @@ def model_migration_file_path(model_name):
     build model migration file path from model name
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "migrate",
         model_migration_file(model_name)))
@@ -112,13 +106,11 @@ def schema_file_path():
     build schema file path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "schema.py"))
 

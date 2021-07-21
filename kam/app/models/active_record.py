@@ -21,7 +21,6 @@ class ActiveRecord():
         load schema into class variable
         """
 
-        # TODO: kampai to determine project path
         # build seed location
         schema_path = schema_file_path()
 
