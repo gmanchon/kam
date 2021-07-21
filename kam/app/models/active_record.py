@@ -76,15 +76,27 @@ class ActiveRecord():
         cols = {k: v for k, v in self.__dict__.items() if k != "id"}
 
         # replace references
-        # TODO: replace references
+        valid_cols = {}
+
+        for column, value in cols.items():
+
+            # checking whether value is an active record object (a reference)
+            if issubclass(type(value), ActiveRecord):
+
+                # replace the reference by its id
+                column = f"{column}_id"
+                value = value.id
+
+            # append value
+            valid_cols[column] = value
 
         # check whether object was persisted
         if self.id is None:
 
             # insert object
-            self.db.insert(table_name, table_schema, self, cols)
+            self.db.insert(table_name, table_schema, self, valid_cols)
 
         else:
 
             # update object
-            self.db.update(table_name, table_schema, self.id, cols)
+            self.db.update(table_name, table_schema, self.id, valid_cols)
