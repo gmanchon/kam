@@ -14,16 +14,44 @@ SUPPORTED_DATA_TYPES = [
     DATA_TYPE_REFERENCES]
 
 
-def create(table, instance_variables):
+def __create_model_code_file(env, table, instance_variables):
     """
-    create model code
+    create model code file
+    """
+
+    # retrieve model template
+    model_template = env.get_template("model.py")
+
+    # convert params
+    table_column_types = {c: t for c, t in [ct.split(":") for ct in instance_variables]}
+
+    print(table_column_types)
+
+    # apply template
+    model_code = model_template.render(
+        table=table,
+        column_types=table_column_types)
+
+    # build model path
+    model_target_path = table_to_model_python_file_path(table)
+
+    # write model
+    with open(model_target_path, "w") as file:
+        file.write(model_code)
+
+
+def create(model_name, instance_variables):
+    """
+    validate model name and instance variables naming conventions
+    create model code file
+    create model migration
     """
 
     # validate table case
-    if table[:1] != table[:1].upper():
-        raise ValueError(f"Table name {table} should follow the UpperCamelCase naming convention 🤒")
+    if model_name[:1] != model_name[:1].upper():
+        raise ValueError(f"Model name {model_name} should follow the UpperCamelCase naming convention 🤒")
 
-    print(f"{table}:")
+    print(f"{model_name}:")
 
     # validate column parameters
     for column_type in instance_variables:
@@ -47,22 +75,5 @@ def create(table, instance_variables):
         autoescape=select_autoescape()
     )
 
-    # retrieve model template
-    model_template = env.get_template("model.py")
-
-    # convert params
-    table_column_types = {c: t for c, t in [ct.split(":") for ct in instance_variables]}
-
-    print(table_column_types)
-
-    # apply template
-    model_code = model_template.render(
-        table=table,
-        column_types=table_column_types)
-
-    # build model path
-    model_target_path = table_to_model_python_file_path(table)
-
-    # write model
-    with open(model_target_path, "w") as file:
-        file.write(model_code)
+    # create model code file
+    __create_model_code_file(env, model_name, instance_variables)
