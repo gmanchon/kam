@@ -22,3 +22,6 @@ class ActiveRecordMigration():
 
         # create table
         self.db_instance.create_table(table_name, columns)
+
+        # no exception was encountered
+        self.migration_successful = True

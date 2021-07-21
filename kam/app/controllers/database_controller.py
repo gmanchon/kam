@@ -76,12 +76,23 @@ def retrieve_code_migrations():
     # build migrations pattern
     migrations_pattern = os.path.join(
         migrations_path,
-        "*")
+        "*.py")
 
     # list migrations
     migration_files = glob.glob(migrations_pattern)
 
     return migration_files
+
+
+def migration_timestamp(migration_path):
+    """
+    retrieve migration timestamp from migration path
+    """
+
+    # build migration timestamp
+    migration_timestamp = os.path.basename(migration_path).split("_")[0]
+
+    return migration_timestamp
 
 
 def migration_klass_name_from_filename(migration_path):
@@ -132,8 +143,8 @@ def run_migration(db_instance, migration_path):
     # instantitate class
     migration_instance = MigrationKlass(db_instance)
 
-    # unused
-    migration_instance
+    # return migration status
+    return migration_instance.migration_successful
 
 
 def migrate():
@@ -151,13 +162,25 @@ def migrate():
     code_migrations = sorted(retrieve_code_migrations())
 
     # process max executed migration
-    max_migration = max(db_migrations)
+    max_migration = max(db_migrations) if len(db_migrations) > 0 else "0"
 
     # iterate through code migrations
-    required_migrations = [m for m in code_migrations if os.path.basename(m).split("_")[0] > max_migration]
+    required_migrations = [m for m in code_migrations if migration_timestamp(m) > max_migration]
+
+    print(code_migrations)
+    print(required_migrations)
 
     # process migrations
     for migration in required_migrations:
 
         # run migration
-        run_migration(db_instance, migration)
+        migration_successful = run_migration(db_instance, migration)
+
+        # update migration table
+        if not migration_successful:
+
+            # stop migrations
+            break
+
+        # mark migration as done
+        db_instance.mark_migration_done(migration_timestamp(migration))

@@ -56,6 +56,22 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
+    def mark_migration_done(self, migration):
+
+        # TODO: use postgres prepared statements
+
+        # query
+        set_migration_done = f"""
+        INSERT INTO schema_migrations (version) values({migration});
+        """
+
+        # retrieve migrations
+        cur = self.conn.cursor()
+        cur.execute(set_migration_done)
+
+        # commit
+        self.conn.commit()
+
     def retrieve_migrations(self):
 
         # query
@@ -147,10 +163,6 @@ class SqlDatabase(BaseDatabase):
         # create migrations table
         cur = self.conn.cursor()
         cur.execute(create_migrations_table)  # create table does not seem to support prepared statements
-
-        # TODO: update migration table
-
-
 
         # commit
         self.conn.commit()
