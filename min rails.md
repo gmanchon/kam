@@ -26,6 +26,7 @@ kam generate model Assessment name:string enterprise:string
 
 kam generate model Skill name:string assessment:references
 kam generate model Credit name:string type:string skill:references
+kam generate model Validation desc:string credit:references
 
 kam generate model Session name:string assessment:references
 kam generate model Candidate github_nickname:string batch:string exam_repo:string exam_repo_2:string api_repo:string api_prod_url:string session:references
