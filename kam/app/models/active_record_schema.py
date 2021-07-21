@@ -1,23 +1,22 @@
 
 class ActiveRecordSchema():
 
+    # database schema
+    db_schema = {}
+
     @classmethod
     def define(cls, definition_function):
 
-        # create schema definition
-        schema_definition = {}
+        # instantiate ar schema
+        ar_schema = ActiveRecordSchema()
 
         # call definition function
-        definition_function(schema_definition)
-
-        print(schema_definition)
-
-        return schema_definition
+        definition_function(ar_schema)
 
     def create_table(self, table_name, columns):
         """
         called by the schema when loaded
         """
 
-        # TODO: store table and columns
-        print("ACTIVE RECORD SCHEMA create_table called 🔥")
+        # fill db schema
+        self.db_schema[table_name] = columns

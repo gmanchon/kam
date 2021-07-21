@@ -17,8 +17,8 @@ TEMPLATE_SCHEMA_FILENAME = "schema.py"
 DB_TO_KAM_DATATYPE = dict(
                 int8="integer",
                 varchar="string",
-                text="bigstring",  # TODO 🤣
-                timestamptz="timestamptz")  # TODO 🤔
+                text="string",
+                timestamptz="string")
 
 
 class SqlDatabase(BaseDatabase):
@@ -402,7 +402,7 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
-    def insert(self, table_name, active_record, columns):
+    def insert(self, table_name, table_schema, active_record, columns):
         """
         called by active record
         """
@@ -425,9 +425,17 @@ class SqlDatabase(BaseDatabase):
         # iterate through column values
         column_values = []
 
-        for value in columns.values():
+        for index, value in enumerate(columns.values()):
 
-            column_values.append(f"'{value}'")
+            # get column data type
+            column = list(columns.keys())[index]
+            column_data_type = table_schema[column]
+
+            # fill value
+            if column_data_type == "string":
+                column_values.append(f"'{value}'")
+            elif column_data_type == "integer":
+                column_values.append(f"{value}")
 
         insert_query += ", ".join(column_values)
 
@@ -447,7 +455,7 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
-    def update(self, table_name, id, columns):
+    def update(self, table_name, table_schema, id, columns):
         """
         called by active record
         """
@@ -460,7 +468,14 @@ class SqlDatabase(BaseDatabase):
 
         for column, value in columns.items():
 
-            update_rows.append(f"\n\"{column}\" = '{value}'")
+            # get column data type
+            column_data_type = table_schema[column]
+
+            # fill value
+            if column_data_type == "string":
+                update_rows.append(f"\n\"{column}\" = '{value}'")
+            elif column_data_type == "integer":
+                update_rows.append(f"\n\"{column}\" = {value}")
 
         update_query += ", ".join(update_rows)
 
