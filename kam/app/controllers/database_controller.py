@@ -93,9 +93,15 @@ def migrate():
     # retrieve current migration
     db_migrations = db_instance.migrations()
 
-    print(db_migrations)
-
     # retrieve migrations
-    migrations = retrieve_code_migrations()
+    code_migrations = sorted(retrieve_code_migrations())
 
-    print(migrations)
+    # process max executed migration
+    max_migration = max(db_migrations)
+
+    # iterate through code migrations
+    required = [m for m in code_migrations if os.path.basename(m).split("_")[0] > max_migration]
+
+    print(db_migrations)
+    print(code_migrations)
+    print(required)

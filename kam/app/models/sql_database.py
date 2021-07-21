@@ -64,7 +64,7 @@ class SqlDatabase(BaseDatabase):
         cur.execute(get_migrations)
         migrations = cur.fetchall()
 
-        return migrations
+        return [m[0] for m in migrations]
 
     def migrations(self):
 
