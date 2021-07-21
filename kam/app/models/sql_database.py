@@ -1,11 +1,24 @@
 
 from kam.app.models.base_database import BaseDatabase
 
-from kam.app.views.conventions import pluralize
+from kam.app.views.conventions import (
+    pluralize,
+    schema_file_path)
 
+import os
 import uuid
 
 import psycopg2
+
+from jinja2 import Environment, PackageLoader, select_autoescape
+
+TEMPLATE_SCHEMA_FILENAME = "schema.py"
+
+DB_TO_KAM_DATATYPE = dict(
+                int8="integer",
+                varchar="string",
+                text="bigstring",  # TODO 🤣
+                timestamptz="timestamptz")  # TODO 🤔
 
 
 class SqlDatabase(BaseDatabase):
@@ -118,6 +131,63 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
+    def __create_schema_template(self, env, template_name, table_columns):
+        """
+        create schema template file
+        """
+
+        # retrieve schema template
+        schema_template = env.get_template(template_name)
+
+        # apply template
+        schema_code = schema_template.render(
+            table_columns=table_columns)
+
+        # build schema path
+        schema_target_path = schema_file_path()
+
+        # create directory
+        os.makedirs(os.path.dirname(schema_target_path), exist_ok=True)
+
+        # write schema
+        with open(schema_target_path, "w") as file:
+            file.write(schema_code)
+
+        print(f"\n# wrote {schema_target_path}")
+
+    def _dump_schema_columns(self, schema_columns):
+        """
+        dump schema columns
+        """
+
+        # create templating environment
+        env = Environment(
+            loader=PackageLoader("kam"),
+            autoescape=select_autoescape()
+        )
+
+        # convert schema columns to table columns
+        table_columns = {}
+
+        for table, position, column, nullable, udt_name in schema_columns:
+
+            # retrieve table content
+            table_content = table_columns.get(table, [])
+            table_columns[table] = table_content
+
+            # convert data type
+            data_type = DB_TO_KAM_DATATYPE[udt_name]
+
+            # fille table content
+            table_content.append(dict(
+                position=position,
+                column=column,
+                nullable=nullable,
+                data_type=data_type))
+
+        # create model migration file
+        self.__create_schema_template(env, TEMPLATE_SCHEMA_FILENAME, table_columns)
+
     def dump_schema(self):
         """
         dump database schema
@@ -139,13 +209,10 @@ class SqlDatabase(BaseDatabase):
         cur.execute(query_schema)
 
         # fetch results
-        table_columns = cur.fetchall()
+        schema_columns = cur.fetchall()
 
-        print(table_columns)
-
-        # TODO: dump DB schema from sql query
-
-        # TODO: retrieve column types from DB schema
+        # dump schema columns
+        self._dump_schema_columns(schema_columns)
 
     def migrations_table_exists(self):
 

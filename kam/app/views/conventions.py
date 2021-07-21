@@ -107,6 +107,22 @@ def model_migration_file_path(model_name):
         model_migration_file(model_name)))
 
 
+def schema_file_path():
+    """
+    build schema file path
+    """
+
+    # TODO: kampai to determine project path
+    return os.path.relpath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "certif",
+        "db",
+        "schema.py"))
+
+
 def model_to_db_table(model_name):
     """
     build db table name from model name
