@@ -1,13 +1,13 @@
 
-class {{table}}():
+class {{model_name}}():
 
     def __init__(self, **kwargs):
 
-        # retrieve {{table.lower()}} attributes
-        self.id = kwargs.get("id"){% for column, _ in column_types.items() %}
-        self.{{column}} = kwargs.get("{{column}}"){% endfor %}
+        # retrieve {{model_name.lower()}} attributes
+        self.id = kwargs.get("id"){% for instance_variable, _ in instance_variable_types.items() %}
+        self.{{instance_variable}} = kwargs.get("{{instance_variable}}"){% endfor %}
 
     def __repr__(self):
 
-        return f"#<{{table}} @={id(self)} id={self.id}{% for column, _ in column_types.items() %} {{column}}={self.{{column}}}{% endfor %}>"
+        return f"#<{{model_name}} @={id(self)} id={self.id}{% for instance_variable, _ in instance_variable_types.items() %} {{instance_variable}}={self.{{instance_variable}}}{% endfor %}>"
 
