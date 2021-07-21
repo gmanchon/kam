@@ -22,6 +22,38 @@ def singularize(model_name):
     return model_name[:-1]
 
 
+def get_db_params_path():
+    """
+    build db params path
+    """
+
+    # TODO: kampai to determine project path
+    return os.path.relpath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "certif",
+        "config",
+        "database.yml"))
+
+
+def get_db_migrations_path():
+    """
+    build db migrations path
+    """
+
+    # TODO: kampai to determine project path
+    return os.path.relpath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "..",
+        "certif",
+        "db",
+        "migrate"))
+
+
 def model_code_file(model_name):
     """
     build model code file name from model name
