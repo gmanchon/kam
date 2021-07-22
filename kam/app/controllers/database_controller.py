@@ -229,6 +229,9 @@ def migrate():
         # mark migration as done
         db_instance.mark_migration_done(migration_timestamp(migration))
 
+    # update db schema
+    dump_schema()
+
 
 def seed():
     """
