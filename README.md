@@ -6,8 +6,8 @@ kam generate model            # generate model and migration
 
 kam db:drop                   # drop database
 kam db:create                 # create database
-kam db:schema:dump            # generate database schema
 kam db:migrate                # run migrations
+kam db:schema:dump            # generate database schema
 kam db:seed                   # run database seed
 ```
 
