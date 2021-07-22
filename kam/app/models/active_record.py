@@ -59,6 +59,26 @@ class ActiveRecord():
 
         cls.db.destroy_all(table_name)
 
+    @classmethod
+    def all(cls):
+        """
+        return all rows
+        """
+
+        # get child class name
+        child_klass_name = cls.__name__
+        table_name = model_to_db_table(child_klass_name)
+
+        print(f"\nreturn all rows from {table_name}...")
+
+        # retrieve rows
+        all_rows = cls.db.select_all(table_name)
+
+        # convert rows to model instances
+        converted_rows = [cls(**row) for row in all_rows]
+
+        return converted_rows
+
     def save(self):
         """
         insert or update row

@@ -9,6 +9,7 @@ import os
 import uuid
 
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -401,6 +402,25 @@ class SqlDatabase(BaseDatabase):
 
         # commit
         self.conn.commit()
+
+    def select_all(self, table_name):
+        """
+        called by active record
+        """
+
+        # query
+        select_all_query = f"SELECT * FROM {table_name};"
+
+        print(select_all_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(select_all_query)
+
+        # fetch results
+        all_rows = cur.fetchall()
+
+        return all_rows
 
     def insert(self, table_name, table_schema, active_record, columns):
         """
