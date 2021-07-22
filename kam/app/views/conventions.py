@@ -1,7 +1,10 @@
 
 import os
+import yaml
 
 from datetime import datetime
+
+from wagon_common.helpers.git.repo import get_git_top_level_directory
 
 
 def pluralize(model_name):
@@ -22,18 +25,59 @@ def singularize(model_name):
     return model_name[:-1]
 
 
+def get_app_directory_path():
+    """
+    return app directory
+    """
+
+    # retrieve app params
+    app_params_path = get_app_params_path()
+
+    # load app conf
+    app_conf = {}
+
+    if os.path.isfile(app_params_path):
+        with open(app_params_path, "r") as file:
+            app_conf = yaml.safe_load(file)
+
+    # retrieve app directory
+    app_directory = app_conf.get("app_directory", "app")
+
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
+    # build app path
+    app_directory_path = os.path.relpath(
+        os.path.join(
+            tld,
+            app_directory))
+
+    return app_directory_path
+
+
+def get_app_params_path():
+    """
+    build app params path
+    """
+
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
+    return os.path.relpath(os.path.join(
+        tld,
+        "kam.yml"))
+
+
 def get_db_params_path():
     """
     build db params path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "config",
         "database.yml"))
 
@@ -43,13 +87,11 @@ def get_db_migrations_path():
     build db migrations path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "migrate"))
 
@@ -67,13 +109,11 @@ def model_code_file_path(model_name):
     build model code file path from model name
     """
 
-    # TODO: kampai to determine project path
+    # retrieve app directory path
+    app_path = get_app_directory_path()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        app_path,
         "models",
         model_code_file(model_name)))
 
@@ -95,13 +135,11 @@ def model_migration_file_path(model_name):
     build model migration file path from model name
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "migrate",
         model_migration_file(model_name)))
@@ -112,13 +150,11 @@ def schema_file_path():
     build schema file path
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     return os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "schema.py"))
 

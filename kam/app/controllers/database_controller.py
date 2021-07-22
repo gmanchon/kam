@@ -6,6 +6,8 @@ from kam.app.views.conventions import (
     get_db_params_path,
     get_db_migrations_path)
 
+from wagon_common.helpers.git.repo import get_git_top_level_directory
+
 import os
 import glob
 import yaml
@@ -162,7 +164,6 @@ def process_module_path(migration_path):
     process module path
     """
 
-    # TODO: kampai to determine project path
     # process module and submodules
     return os.path.splitext(migration_path)[0].replace(os.sep, ".")
 
@@ -228,20 +229,21 @@ def migrate():
         # mark migration as done
         db_instance.mark_migration_done(migration_timestamp(migration))
 
+    # update db schema
+    dump_schema()
+
 
 def seed():
     """
     seed the database
     """
 
-    # TODO: kampai to determine project path
+    # retrieve project top level directory
+    tld = get_git_top_level_directory()
+
     # build seed location
     seed_path = os.path.relpath(os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "..",
-        "certif",
+        tld,
         "db",
         "seed.py"))
 
