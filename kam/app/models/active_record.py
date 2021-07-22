@@ -93,6 +93,8 @@ class ActiveRecord():
             """
 
             # look out for belongs_to relationships
+            relation_model = None
+
             if name in self.one.keys():
 
                 # retrieve relation model
@@ -107,7 +109,7 @@ class ActiveRecord():
             if relation_model is not None:
 
                 # build class id
-                klass_id = f"{type(self).__name__}_id"
+                klass_id = f"{type(self).__name__.lower()}_id"
 
                 # retrieve linked objects
                 relations = relation_model.where(**{klass_id: self.id})
@@ -147,6 +149,29 @@ class ActiveRecord():
 
         # convert rows to model instances
         converted_rows = [cls(**row) for row in all_rows]
+
+        return converted_rows
+
+    @classmethod
+    def where(cls, **kwargs):
+        """
+        return matching rows
+        """
+
+        # get child class name
+        child_klass_name = cls.__name__
+        table_name = model_to_db_table(child_klass_name)
+
+        print(f"\nreturn matching rows for {kwargs} from {table_name}...")
+
+        # retrieve table schema
+        table_schema = ActiveRecordSchema.db_schema[table_name]
+
+        # retrieve rows
+        matching_rows = cls.db.select_where(table_name, table_schema, **kwargs)
+
+        # convert rows to model instances
+        converted_rows = [cls(**row) for row in matching_rows]
 
         return converted_rows
 

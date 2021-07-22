@@ -422,6 +422,46 @@ class SqlDatabase(BaseDatabase):
 
         return all_rows
 
+    def select_where(self, table_name, table_schema, **kwargs):
+        """
+        called by active record
+        """
+
+        # query
+        select_all_query = (
+            f"SELECT * FROM {table_name}"
+            + "\nWHERE")
+
+        # iterate through arguments
+        where_clauses = []
+
+        for column, value in kwargs.items():
+
+            # get column data type
+            column_data_type = table_schema[column]
+
+            # fill value
+            if column_data_type == "string":
+                where_clauses.append(f"\n\"{column}\" = '{value}'")
+            elif column_data_type == "integer":
+                where_clauses.append(f"\n\"{column}\" = {value}")
+
+        # join where clauses
+        select_all_query += (
+            "\nAND\n".join(where_clauses)
+            + ";")
+
+        print(select_all_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(select_all_query)
+
+        # fetch results
+        matching_rows = cur.fetchall()
+
+        return matching_rows
+
     def insert(self, table_name, table_schema, active_record, columns):
         """
         called by active record
