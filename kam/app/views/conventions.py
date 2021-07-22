@@ -165,3 +165,11 @@ def model_to_db_table(model_name):
     """
 
     return pluralize(model_name.lower())
+
+
+def model_name_to_klass_name(model_name):
+    """
+    build klass name from model name
+    """
+
+    return "".join([w.capitalize() for w in model_name.split("_")])

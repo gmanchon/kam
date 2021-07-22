@@ -4,6 +4,8 @@ from kam.app.models.active_record_schema import ActiveRecordSchema
 
 from kam.app.views.conventions import (
     model_to_db_table,
+    singularize,
+    model_name_to_klass_name,
     schema_file_path)
 
 import os
@@ -44,6 +46,75 @@ class ActiveRecord():
 
         # retrieve db connection
         self.db = instantiate_db()
+
+    # references
+    one = {}
+    many = {}
+
+    @classmethod
+    def belongs_to(cls, model_name):
+
+        # build class name
+        klass_name = model_name_to_klass_name(model_name)
+
+        # build module name
+        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_name])
+
+        # import module
+        klass_module = importlib.import_module(klass_module_name)
+
+        # store reference
+        cls.one[model_name] = getattr(klass_module, klass_name)
+
+    @classmethod
+    def has_many(cls, model_names):
+
+        # build class name
+        model_name = singularize(model_names)
+        klass_name = model_name_to_klass_name(model_name)
+
+        # build module name
+        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_name])
+
+        # import module
+        klass_module = importlib.import_module(klass_module_name)
+
+        # store reference
+        cls.many[model_names] = getattr(klass_module, klass_name)
+
+    def __getattr__(self, name):
+        """
+        handle missing method calls for belongs_to and has_many relationships
+        """
+
+        def _missing(*args, **kwargs):
+            """
+            call relation method if it exists
+            """
+
+            # look out for belongs_to relationships
+            if name in self.one.keys():
+
+                # retrieve relation model
+                relation_model = self.one[name]
+
+            elif name in self.many.keys():
+
+                # retrieve relation model
+                relation_model = self.many[name]
+
+            # check if a relation exists
+            if relation_model is not None:
+
+                # build class id
+                klass_id = f"{type(self).__name__}_id"
+
+                # retrieve linked objects
+                relations = relation_model.where(**{klass_id: self.id})
+
+                return relations
+
+        return _missing
 
     @classmethod
     def destroy_all(cls):
