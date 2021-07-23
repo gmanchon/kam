@@ -133,6 +133,8 @@ class ActiveRecord():
         allow visual representation of objects in streamlit
         """
 
+        # TODO: handle when called on class rather than object (type does not display)
+
         return self
 
     @classmethod
