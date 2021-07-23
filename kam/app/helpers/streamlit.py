@@ -63,7 +63,7 @@ def text_to_model(model_text, models):
     return loaded_models[model_string_id]
 
 
-def st_radio(label, models, model_formatter):
+def st_radio(label, models, model_formatter, context=st):
     """
     streamlit radio helper allowing to select a model from a list of models
     """
@@ -72,7 +72,7 @@ def st_radio(label, models, model_formatter):
     model_choices = [model_to_text(m, model_formatter(m)) for m in models]
 
     # create radio button
-    selected_assessment = st.radio(
+    selected_assessment = context.radio(
         label,
         model_choices,
         key=f"st_radio_{label}")
