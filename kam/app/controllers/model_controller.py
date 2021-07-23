@@ -11,11 +11,13 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 DATA_TYPE_STRING = "string"
+DATA_TYPE_TEXT = "text"
 DATA_TYPE_INTEGER = "integer"
 DATA_TYPE_REFERENCES = "references"
 
 SUPPORTED_DATA_TYPES = [
     DATA_TYPE_STRING,
+    DATA_TYPE_TEXT,
     DATA_TYPE_INTEGER,
     DATA_TYPE_REFERENCES]
 

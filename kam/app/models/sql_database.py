@@ -1,6 +1,8 @@
 
 from kam.app.models.base_database import BaseDatabase
 
+from kam.app.controllers.model_controller import SUPPORTED_DATA_TYPES
+
 from kam.app.views.conventions import (
     pluralize,
     schema_file_path)
@@ -313,10 +315,14 @@ class SqlDatabase(BaseDatabase):
 
             if data_type == "string":
                 statements.append(f"\"{column}\" VARCHAR NULL")
+            elif data_type == "text":
+                statements.append(f"\"{column}\" TEXT NULL")
             elif data_type == "integer":
                 statements.append(f"\"{column}\" BIGINT NULL")
             elif data_type == "references":
                 statements.append(f"{column}_id BIGSERIAL NOT NULL")
+            else:
+                raise ValueError(f"Invalid data type {data_type}, supported: {', '.join(SUPPORTED_DATA_TYPES)} 🤒")
 
         # add timestamps
         if timestamps:
