@@ -2,7 +2,7 @@
 from kam.app.models.active_record_migration import ActiveRecordMigration
 
 
-class Create{{model_name}}(ActiveRecordMigration):
+class Create{{model_klass_name}}(ActiveRecordMigration):
 
     def change(self):
 

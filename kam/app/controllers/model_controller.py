@@ -2,7 +2,8 @@
 from kam.app.views.conventions import (
     pluralize,
     model_code_file_path,
-    model_migration_file_path)
+    model_migration_file_path,
+    model_name_to_klass_name)
 
 import os
 
@@ -33,6 +34,7 @@ def __create_model_template(env, template_name, model_name, instance_variable_ty
     # apply template
     model_code = model_template.render(
         model_name=model_name,
+        model_klass_name=model_name_to_klass_name(model_name),
         instance_variable_types=instance_variable_types)
 
     # select target file path
