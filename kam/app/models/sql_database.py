@@ -314,7 +314,7 @@ class SqlDatabase(BaseDatabase):
             if data_type == "string":
                 statements.append(f"\"{column}\" VARCHAR NULL")
             elif data_type == "integer":
-                statements.append(f"\"{column}\" INT64 NULL")
+                statements.append(f"\"{column}\" BIGINT NULL")
             elif data_type == "references":
                 statements.append(f"{column}_id BIGSERIAL NOT NULL")
 
