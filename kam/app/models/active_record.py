@@ -105,6 +105,11 @@ class ActiveRecord():
                 # retrieve relation model
                 relation_model = self.many[name]
 
+            else:
+
+                # alert missing method
+                print(f"🔥 missing method {name} for {self}, {args}, {kwargs}")
+
             # check if a relation exists
             if relation_model is not None:
 
@@ -122,6 +127,13 @@ class ActiveRecord():
                 return relations
 
         return _missing
+
+    def _repr_html_(self):
+        """
+        allow visual representation of objects in streamlit
+        """
+
+        return self
 
     @classmethod
     def destroy_all(cls):
