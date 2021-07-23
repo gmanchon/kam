@@ -6,7 +6,9 @@ from kam.app.views.conventions import (
     model_to_db_table,
     singularize,
     model_name_to_klass_name,
-    schema_file_path)
+    schema_file_path,
+    model_to_db_table_fk_id,
+    model_to_db_table_ref)
 
 import os
 
@@ -114,15 +116,18 @@ class ActiveRecord():
             if relation_model is not None:
 
                 # build class id
-                rel_klass_name = type(self).__name__.lower()
-                klass_id = f"{rel_klass_name}_id"
+                klass_name = type(self).__name__
+                klass_id = model_to_db_table_fk_id(klass_name)
+                klass_rel = model_to_db_table_ref(klass_name)
 
                 # retrieve linked objects
                 relations = relation_model.where(**{klass_id: self.id})
 
                 # fill self reference
                 for relation in relations:
-                    setattr(relation, rel_klass_name, self)
+
+                    # TODO: this overrides the belongs_to method
+                    setattr(relation, klass_rel, self)
 
                 return relations
 
