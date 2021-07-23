@@ -109,10 +109,15 @@ class ActiveRecord():
             if relation_model is not None:
 
                 # build class id
-                klass_id = f"{type(self).__name__.lower()}_id"
+                rel_klass_name = type(self).__name__.lower()
+                klass_id = f"{rel_klass_name}_id"
 
                 # retrieve linked objects
                 relations = relation_model.where(**{klass_id: self.id})
+
+                # fill self reference
+                for relation in relations:
+                    setattr(relation, rel_klass_name, self)
 
                 return relations
 

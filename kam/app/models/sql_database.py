@@ -460,6 +460,8 @@ class SqlDatabase(BaseDatabase):
         # fetch results
         matching_rows = cur.fetchall()
 
+        # TODO: handle references
+
         return matching_rows
 
     def insert(self, table_name, table_schema, active_record, columns):
