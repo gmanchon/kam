@@ -2,7 +2,7 @@
 from kam.app.models.active_record import ActiveRecord
 
 
-class {{model_name}}(ActiveRecord):
+class {{model_klass_name}}(ActiveRecord):
 
     def __init__(self, **kwargs):
 
