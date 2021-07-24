@@ -66,7 +66,10 @@ class ActiveRecord():
         klass_module = importlib.import_module(klass_module_name)
 
         # store reference
-        cls.one[model_name] = getattr(klass_module, klass_name)
+        child_klass_name = cls.__name__
+        klass_ones = cls.one.get(child_klass_name, {})
+        klass_ones[model_name] = getattr(klass_module, klass_name)
+        cls.one[child_klass_name] = klass_ones
 
     @classmethod
     def has_many(cls, model_names):
@@ -82,7 +85,10 @@ class ActiveRecord():
         klass_module = importlib.import_module(klass_module_name)
 
         # store reference
-        cls.many[model_names] = getattr(klass_module, klass_name)
+        child_klass_name = cls.__name__
+        klass_manys = cls.many.get(child_klass_name, {})
+        klass_manys[model_names] = getattr(klass_module, klass_name)
+        cls.many[child_klass_name] = klass_manys
 
     def __getattr__(self, name):
         """
@@ -96,16 +102,21 @@ class ActiveRecord():
 
             # look out for belongs_to relationships
             relation_model = None
+            child_klass_name = type(self).__name__
 
-            if name in self.one.keys():
+            # retrieve reference klasses
+            klass_ones = self.one.get(child_klass_name, {})
+            klass_manys = self.many.get(child_klass_name, {})
+
+            if name in klass_ones.keys():
 
                 # retrieve relation model
-                relation_model = self.one[name]
+                relation_model = klass_ones[name]
 
-            elif name in self.many.keys():
+            elif name in klass_manys.keys():
 
                 # retrieve relation model
-                relation_model = self.many[name]
+                relation_model = klass_manys[name]
 
             else:
 
