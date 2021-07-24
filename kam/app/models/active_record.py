@@ -121,7 +121,7 @@ class ActiveRecord():
             else:
 
                 # alert missing method
-                print(f"🔥 missing method {name} for {self}, {args}, {kwargs}")
+                raise ValueError(f"Missing method {name} for {self}, {args}, {kwargs} 🤒")
 
             # check if a relation exists
             if relation_model is not None:
