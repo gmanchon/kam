@@ -136,8 +136,6 @@ class ActiveRecord():
 
                 # fill self reference
                 for relation in relations:
-
-                    # TODO: this overrides the belongs_to method
                     setattr(relation, klass_rel, self)
 
                 return relations
