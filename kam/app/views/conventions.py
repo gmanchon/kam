@@ -195,15 +195,6 @@ def model_to_db_table_ref(model_klass_name):
     return singularize(model_to_db_table(model_klass_name))
 
 
-def model_to_db_table_fk_id(model_klass_name):
-    """
-    build db table fk id from model klass name
-    """
-
-    # split title words
-    return f"{model_to_db_table_ref(model_klass_name)}_id"
-
-
 def model_name_to_klass_name(model_name):
     """
     build klass name from model name

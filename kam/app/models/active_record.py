@@ -5,9 +5,9 @@ from kam.app.models.active_record_schema import ActiveRecordSchema
 from kam.app.views.conventions import (
     model_to_db_table,
     singularize,
+    is_plural,
     model_name_to_klass_name,
     schema_file_path,
-    model_to_db_table_fk_id,
     model_to_db_table_ref)
 
 import os
@@ -54,40 +54,51 @@ class ActiveRecord():
     many = {}
 
     @classmethod
-    def belongs_to(cls, model_name):
+    def __get_model_klass(cls, model_name):
+
+        model_sing_name = singularize(model_name) if is_plural(model_name) else model_name
 
         # build class name
-        klass_name = model_name_to_klass_name(model_name)
+        klass_name = model_name_to_klass_name(model_sing_name)
 
         # build module name
-        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_name])
+        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_sing_name])
 
         # import module
         klass_module = importlib.import_module(klass_module_name)
+
+        # get klass
+        model_klass = getattr(klass_module, klass_name)
+
+        return model_klass
+
+    @classmethod
+    def belongs_to(cls, model_name, through=None):
+
+        # get model klass
+        model_klass = cls.__get_model_klass(model_name)
 
         # store reference
         child_klass_name = cls.__name__
         klass_ones = cls.one.get(child_klass_name, {})
-        klass_ones[model_name] = getattr(klass_module, klass_name)
+        klass_ones[model_name] = dict(
+            klass=model_klass,
+            through=through)
         cls.one[child_klass_name] = klass_ones
 
     @classmethod
-    def has_many(cls, model_names):
+    def has_many(cls, model_names, through=None):
 
-        # build class name
+        # get model klass
         model_name = singularize(model_names)
-        klass_name = model_name_to_klass_name(model_name)
-
-        # build module name
-        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_name])
-
-        # import module
-        klass_module = importlib.import_module(klass_module_name)
+        model_klass = cls.__get_model_klass(model_name)
 
         # store reference
         child_klass_name = cls.__name__
         klass_manys = cls.many.get(child_klass_name, {})
-        klass_manys[model_names] = getattr(klass_module, klass_name)
+        klass_manys[model_names] = dict(
+            klass=model_klass,
+            through=through)
         cls.many[child_klass_name] = klass_manys
 
     def __getattr__(self, name):
@@ -126,13 +137,21 @@ class ActiveRecord():
             # check if a relation exists
             if relation_model is not None:
 
+                # retrieve klass
+                relation_klass = relation_model["klass"]
+                relation_through = relation_model["through"]
+
+                if relation_through is None:
+                    relation_through = [name]
+
                 # build class id
                 klass_name = type(self).__name__
-                klass_id = model_to_db_table_fk_id(klass_name)
                 klass_rel = model_to_db_table_ref(klass_name)
 
                 # retrieve linked objects
-                relations = relation_model.where(**{klass_id: self.id})
+                relations = self.where(
+                    **dict(id=self.id),
+                    through=relation_through)  # + [name])
 
                 # fill self reference
                 for relation in relations:
@@ -186,7 +205,7 @@ class ActiveRecord():
         return converted_rows
 
     @classmethod
-    def where(cls, **kwargs):
+    def where(cls, through=[], **kwargs):
         """
         return matching rows
         """
@@ -201,10 +220,14 @@ class ActiveRecord():
         table_schema = ActiveRecordSchema.db_schema[table_name]
 
         # retrieve rows
-        matching_rows = cls.db.select_where(table_name, table_schema, **kwargs)
+        matching_rows, target_table = cls.db.select_where(
+            table_name, table_schema, **kwargs, through=through)
+
+        # get model klass
+        model_klass = cls.__get_model_klass(target_table)
 
         # convert rows to model instances
-        converted_rows = [cls(**row) for row in matching_rows]
+        converted_rows = [model_klass(**row) for row in matching_rows]
 
         return converted_rows
 
