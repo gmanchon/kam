@@ -3,12 +3,15 @@ from kam.app.models.base_database import BaseDatabase
 
 from kam.app.controllers.model_controller import SUPPORTED_DATA_TYPES
 
-from kam.app.views.conventions import retrieve_table_alias
-
-from kam.app.views.conventions import (
+from kam.app.helpers.grammar import (
     singularize,
     pluralize,
-    is_plural,
+    is_plural)
+
+from kam.app.helpers.database import (
+    retrieve_table_alias)
+
+from kam.app.helpers.file import (
     schema_file_path)
 
 import os

@@ -2,13 +2,17 @@
 from kam.app.controllers.database_controller import instantiate_db
 from kam.app.models.active_record_schema import ActiveRecordSchema
 
-from kam.app.views.conventions import (
-    model_to_db_table,
+from kam.app.helpers.grammar import (
     singularize,
-    is_plural,
-    model_name_to_klass_name,
-    schema_file_path,
-    model_to_db_table_ref)
+    is_plural)
+
+from kam.app.helpers.noun import (
+    table_ref_to_klass_name,
+    klass_name_to_table_ref)
+
+from kam.app.helpers.file import (
+    klass_name_to_table_name,
+    schema_file_path)
 
 import os
 
@@ -59,7 +63,7 @@ class ActiveRecord():
         model_sing_name = singularize(model_name) if is_plural(model_name) else model_name
 
         # build class name
-        klass_name = model_name_to_klass_name(model_sing_name)
+        klass_name = table_ref_to_klass_name(model_sing_name)
 
         # build module name
         klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_sing_name])
@@ -146,7 +150,7 @@ class ActiveRecord():
 
                 # build class id
                 klass_name = type(self).__name__
-                klass_rel = model_to_db_table_ref(klass_name)
+                klass_rel = klass_name_to_table_ref(klass_name)
 
                 # retrieve linked objects
                 relations = self.where(
@@ -178,7 +182,7 @@ class ActiveRecord():
 
         # get child class name
         child_klass_name = cls.__name__
-        table_name = model_to_db_table(child_klass_name)
+        table_name = klass_name_to_table_name(child_klass_name)
 
         print(f"\ndestroy all {table_name}...")
 
@@ -192,7 +196,7 @@ class ActiveRecord():
 
         # get child class name
         child_klass_name = cls.__name__
-        table_name = model_to_db_table(child_klass_name)
+        table_name = klass_name_to_table_name(child_klass_name)
 
         print(f"\nreturn all rows from {table_name}...")
 
@@ -212,7 +216,7 @@ class ActiveRecord():
 
         # get child class name
         child_klass_name = cls.__name__
-        table_name = model_to_db_table(child_klass_name)
+        table_name = klass_name_to_table_name(child_klass_name)
 
         print(f"\nreturn matching rows for {kwargs} from {table_name}...")
 
@@ -238,7 +242,7 @@ class ActiveRecord():
 
         # get child class name
         child_klass_name = type(self).__name__
-        table_name = model_to_db_table(child_klass_name)
+        table_name = klass_name_to_table_name(child_klass_name)
 
         # retrieve table schema
         table_schema = ActiveRecordSchema.db_schema[table_name]

@@ -1,9 +1,11 @@
 
-from kam.app.views.conventions import (
-    pluralize,
+from kam.app.helpers.grammar import (
+    pluralize)
+
+from kam.app.helpers.file import (
     model_code_file_path,
     model_migration_file_path,
-    model_to_db_table)
+    klass_name_to_table_name)
 
 import os
 
@@ -36,7 +38,7 @@ def __create_model_template(env, template_name, model_klass_name, instance_varia
     # apply template
     model_code = model_template.render(
         model_klass_name=model_klass_name,
-        model_table_name=model_to_db_table(model_klass_name),
+        model_table_name=klass_name_to_table_name(model_klass_name),
         migration_klass_name=pluralize(model_klass_name),
         instance_variable_types=instance_variable_types)
 
