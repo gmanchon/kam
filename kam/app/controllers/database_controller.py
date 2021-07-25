@@ -2,7 +2,7 @@
 from kam.app.models.yaml_database import YamlDatabase
 from kam.app.models.sql_database import SqlDatabase
 
-from kam.app.views.conventions import (
+from kam.app.helpers.file import (
     get_db_params_path,
     get_db_migrations_path)
 

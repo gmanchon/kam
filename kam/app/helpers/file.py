@@ -4,25 +4,13 @@ import yaml
 
 from datetime import datetime
 
+from kam.app.helpers.grammar import (
+    singularize)
+
+from kam.app.helpers.noun import (
+    klass_name_to_table_name)
+
 from wagon_common.helpers.git.repo import get_git_top_level_directory
-
-
-def pluralize(model_name):
-    """
-    process plural form from singular form
-    """
-
-    # TODO: pluralize
-    return f"{model_name}s"
-
-
-def singularize(model_name):
-    """
-    process singular form from plural form
-    """
-
-    # TODO: singularize
-    return model_name[:-1]
 
 
 def get_app_directory_path():
@@ -104,10 +92,13 @@ def model_code_file(model_name):
     return f"{model_name.lower()}.py"
 
 
-def model_code_file_path(model_name):
+def model_code_file_path(model_klass_name):
     """
     build model code file path from model name
     """
+
+    # build db table name
+    db_table_name = klass_name_to_table_name(model_klass_name)
 
     # retrieve app directory path
     app_path = get_app_directory_path()
@@ -115,19 +106,22 @@ def model_code_file_path(model_name):
     return os.path.relpath(os.path.join(
         app_path,
         "models",
-        model_code_file(model_name)))
+        model_code_file(singularize(db_table_name))))
 
 
-def model_migration_file(model_name):
+def model_migration_file(model_klass_name):
     """
     build model migration file name from model name
     """
+
+    # build db table name
+    db_table_name = klass_name_to_table_name(model_klass_name)
 
     # get current date and time
     now = datetime.now()
     timestamp = datetime.strftime(now, "%Y%m%d%H%M%S")
 
-    return f"{timestamp}_create_{model_name.lower()}.py"
+    return f"{timestamp}_create_{db_table_name}.py"
 
 
 def model_migration_file_path(model_name):
@@ -157,11 +151,3 @@ def schema_file_path():
         tld,
         "db",
         "schema.py"))
-
-
-def model_to_db_table(model_name):
-    """
-    build db table name from model name
-    """
-
-    return pluralize(model_name.lower())

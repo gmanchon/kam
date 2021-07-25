@@ -24,13 +24,13 @@ def generate():
 
 @generate.command("model")
 @click.argument(
-    "model_name")
+    "model_klass_name")
 @click.argument(
     "instance_variables",
     nargs=-1)
-def generate_model(model_name, instance_variables):
+def generate_model(model_klass_name, instance_variables):
 
-    create(model_name, instance_variables)
+    create(model_klass_name, instance_variables)
 
 
 @generate.command("migration")

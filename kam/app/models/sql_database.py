@@ -1,14 +1,24 @@
 
 from kam.app.models.base_database import BaseDatabase
 
-from kam.app.views.conventions import (
+from kam.app.controllers.model_controller import SUPPORTED_DATA_TYPES
+
+from kam.app.helpers.grammar import (
+    singularize,
     pluralize,
+    is_plural)
+
+from kam.app.helpers.database import (
+    retrieve_table_alias)
+
+from kam.app.helpers.file import (
     schema_file_path)
 
 import os
 import uuid
 
 import psycopg2
+from psycopg2.extras import RealDictCursor
 
 from jinja2 import Environment, PackageLoader, select_autoescape
 
@@ -312,10 +322,14 @@ class SqlDatabase(BaseDatabase):
 
             if data_type == "string":
                 statements.append(f"\"{column}\" VARCHAR NULL")
+            elif data_type == "text":
+                statements.append(f"\"{column}\" TEXT NULL")
             elif data_type == "integer":
-                statements.append(f"\"{column}\" INT64 NULL")
+                statements.append(f"\"{column}\" BIGINT NULL")
             elif data_type == "references":
                 statements.append(f"{column}_id BIGSERIAL NOT NULL")
+            else:
+                raise ValueError(f"Invalid data type {data_type}, supported: {', '.join(SUPPORTED_DATA_TYPES)} 🤒")
 
         # add timestamps
         if timestamps:
@@ -401,6 +415,102 @@ class SqlDatabase(BaseDatabase):
 
         # commit
         self.conn.commit()
+
+    def select_all(self, table_name):
+        """
+        called by active record
+        """
+
+        # query
+        select_all_query = f"SELECT * FROM {table_name};"
+
+        print(select_all_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(select_all_query)
+
+        # fetch results
+        all_rows = cur.fetchall()
+
+        return all_rows
+
+    def select_where(self, model_table_name, table_schema, through=[], **kwargs):
+        """
+        called by active record
+        """
+
+        # retrieve table aliases
+        model_alias, through_alias = retrieve_table_alias(
+            model_table_name, through)
+
+        # build target alias
+        target_alias = model_alias if len(through) == 0 else through_alias[-1]
+        target_table = model_table_name if len(through) == 0 else through[-1]
+
+        # query
+        select_all_query = (
+            f"SELECT {target_alias}.*"
+            + f"\nFROM {model_table_name} {model_alias}")
+
+        # iterate through join tables
+        previous_table = singularize(model_table_name) if is_plural(model_table_name) else model_table_name
+        previous_alias = model_alias
+        for join_table, join_alias in zip(through, through_alias):
+
+            # check relation direction
+            if is_plural(join_table):
+
+                select_all_query += (
+                    f"\nJOIN {join_table} {join_alias} "
+                    + f"ON {join_alias}.\"{previous_table}_id\" "
+                    + f"= {previous_alias}.id")
+
+            else:
+
+                select_all_query += (
+                    f"\nJOIN {pluralize(join_table)} {join_alias} "
+                    + f"ON {join_alias}.id "
+                    + f"= {previous_alias}.\"{join_table}_id\"")
+
+            # set next alias
+            previous_table = singularize(join_table) if is_plural(join_table) else join_table
+            previous_alias = join_alias
+
+        # filters
+        select_all_query += "\nWHERE"
+
+        # iterate through arguments
+        where_clauses = []
+
+        for column, value in kwargs.items():
+
+            # get column data type
+            column_data_type = table_schema[column]
+
+            # fill value
+            if column_data_type == "string":
+                where_clauses.append(f"\n{model_alias}.\"{column}\" = '{value}'")
+            elif column_data_type == "integer":
+                where_clauses.append(f"\n{model_alias}.\"{column}\" = {value}")
+
+        # join where clauses
+        select_all_query += (
+            "\nAND".join(where_clauses)
+            + ";")
+
+        print(select_all_query)
+
+        # retrieve migrations
+        cur = self.conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute(select_all_query)
+
+        # fetch results
+        matching_rows = cur.fetchall()
+
+        # TODO: handle references
+
+        return matching_rows, target_table
 
     def insert(self, table_name, table_schema, active_record, columns):
         """

@@ -1,8 +1,11 @@
 
-from kam.app.views.conventions import (
-    pluralize,
+from kam.app.helpers.grammar import (
+    pluralize)
+
+from kam.app.helpers.file import (
     model_code_file_path,
-    model_migration_file_path)
+    model_migration_file_path,
+    klass_name_to_table_name)
 
 import os
 
@@ -10,11 +13,13 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 
 
 DATA_TYPE_STRING = "string"
+DATA_TYPE_TEXT = "text"
 DATA_TYPE_INTEGER = "integer"
 DATA_TYPE_REFERENCES = "references"
 
 SUPPORTED_DATA_TYPES = [
     DATA_TYPE_STRING,
+    DATA_TYPE_TEXT,
     DATA_TYPE_INTEGER,
     DATA_TYPE_REFERENCES]
 
@@ -22,7 +27,7 @@ TEMPLATE_MIGRATION_FILENAME = "migration.py"
 TEMPLATE_MODEL_FILENAME = "model.py"
 
 
-def __create_model_template(env, template_name, model_name, instance_variable_types):
+def __create_model_template(env, template_name, model_klass_name, instance_variable_types):
     """
     create model template file
     """
@@ -32,7 +37,9 @@ def __create_model_template(env, template_name, model_name, instance_variable_ty
 
     # apply template
     model_code = model_template.render(
-        model_name=model_name,
+        model_klass_name=model_klass_name,
+        model_table_name=klass_name_to_table_name(model_klass_name),
+        migration_klass_name=pluralize(model_klass_name),
         instance_variable_types=instance_variable_types)
 
     # select target file path
@@ -41,7 +48,7 @@ def __create_model_template(env, template_name, model_name, instance_variable_ty
         TEMPLATE_MODEL_FILENAME: model_code_file_path}
 
     # build model path
-    model_target_path = target_file_path_function[template_name](model_name)
+    model_target_path = target_file_path_function[template_name](model_klass_name)
 
     # create directory
     os.makedirs(os.path.dirname(model_target_path), exist_ok=True)
@@ -53,7 +60,7 @@ def __create_model_template(env, template_name, model_name, instance_variable_ty
     print(f"# wrote {model_target_path}")
 
 
-def create(model_name, instance_variables):
+def create(model_klass_name, instance_variables):
     """
     validate model name and instance variables naming conventions
     create model code file
@@ -61,10 +68,10 @@ def create(model_name, instance_variables):
     """
 
     # validate model name case
-    if model_name[:1] != model_name[:1].upper():
-        raise ValueError(f"Model name {model_name} should follow the UpperCamelCase naming convention 🤒")
+    if "_" in model_klass_name or model_klass_name[:1] != model_klass_name[:1].upper():
+        raise ValueError(f"Model name {model_klass_name} should follow the UpperCamelCase naming convention 🤒")
 
-    print(f"{model_name}:")
+    print(f"{model_klass_name}:")
 
     # validate column parameters
     for column_type in instance_variables:
@@ -92,7 +99,7 @@ def create(model_name, instance_variables):
     )
 
     # create model migration file
-    __create_model_template(env, TEMPLATE_MIGRATION_FILENAME, pluralize(model_name), instance_variable_types)
+    __create_model_template(env, TEMPLATE_MIGRATION_FILENAME, model_klass_name, instance_variable_types)
 
     # create model code file
-    __create_model_template(env, TEMPLATE_MODEL_FILENAME, model_name, instance_variable_types)
+    __create_model_template(env, TEMPLATE_MODEL_FILENAME, model_klass_name, instance_variable_types)
