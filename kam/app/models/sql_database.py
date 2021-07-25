@@ -3,8 +3,12 @@ from kam.app.models.base_database import BaseDatabase
 
 from kam.app.controllers.model_controller import SUPPORTED_DATA_TYPES
 
+from kam.app.views.conventions import retrieve_table_alias
+
 from kam.app.views.conventions import (
+    singularize,
     pluralize,
+    is_plural,
     schema_file_path)
 
 import os
@@ -428,15 +432,50 @@ class SqlDatabase(BaseDatabase):
 
         return all_rows
 
-    def select_where(self, table_name, table_schema, **kwargs):
+    def select_where(self, model_table_name, table_schema, through=[], **kwargs):
         """
         called by active record
         """
 
+        # retrieve table aliases
+        model_alias, through_alias = retrieve_table_alias(
+            model_table_name, through)
+
+        # build target alias
+        target_alias = model_alias if len(through) == 0 else through_alias[-1]
+        target_table = model_table_name if len(through) == 0 else through[-1]
+
         # query
         select_all_query = (
-            f"SELECT * FROM {table_name}"
-            + "\nWHERE")
+            f"SELECT {target_alias}.*"
+            + f"\nFROM {model_table_name} {model_alias}")
+
+        # iterate through join tables
+        previous_table = singularize(model_table_name) if is_plural(model_table_name) else model_table_name
+        previous_alias = model_alias
+        for join_table, join_alias in zip(through, through_alias):
+
+            # check relation direction
+            if is_plural(join_table):
+
+                select_all_query += (
+                    f"\nJOIN {join_table} {join_alias} "
+                    + f"ON {join_alias}.\"{previous_table}_id\" "
+                    + f"= {previous_alias}.id")
+
+            else:
+
+                select_all_query += (
+                    f"\nJOIN {pluralize(join_table)} {join_alias} "
+                    + f"ON {join_alias}.id "
+                    + f"= {previous_alias}.\"{join_table}_id\"")
+
+            # set next alias
+            previous_table = singularize(join_table) if is_plural(join_table) else join_table
+            previous_alias = join_alias
+
+        # filters
+        select_all_query += "\nWHERE"
 
         # iterate through arguments
         where_clauses = []
@@ -448,13 +487,13 @@ class SqlDatabase(BaseDatabase):
 
             # fill value
             if column_data_type == "string":
-                where_clauses.append(f"\n\"{column}\" = '{value}'")
+                where_clauses.append(f"\n{model_alias}.\"{column}\" = '{value}'")
             elif column_data_type == "integer":
-                where_clauses.append(f"\n\"{column}\" = {value}")
+                where_clauses.append(f"\n{model_alias}.\"{column}\" = {value}")
 
         # join where clauses
         select_all_query += (
-            "\nAND\n".join(where_clauses)
+            "\nAND".join(where_clauses)
             + ";")
 
         print(select_all_query)
@@ -468,7 +507,7 @@ class SqlDatabase(BaseDatabase):
 
         # TODO: handle references
 
-        return matching_rows
+        return matching_rows, target_table
 
     def insert(self, table_name, table_schema, active_record, columns):
         """
