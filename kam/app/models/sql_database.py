@@ -620,7 +620,8 @@ class SqlDatabase(BaseDatabase):
             # fill value
             if column_data_type == "string":
                 column_values.append("%s")
-                query_params.append(f"'{value}'")
+                # query_params.append(f"'{value}'")
+                query_params.append(value)
             elif column_data_type == "integer":
                 column_values.append("%s")
                 query_params.append(value)
@@ -667,7 +668,8 @@ class SqlDatabase(BaseDatabase):
             # fill value
             if column_data_type == "string":
                 update_rows.append(f"\n\"{column}\" = %s")
-                query_params.append(f"'{value}'")
+                # query_params.append(f"'{value}'")
+                query_params.append(value)
             elif column_data_type == "integer":
                 update_rows.append(f"\n\"{column}\" = %s")
                 query_params.append(value)
