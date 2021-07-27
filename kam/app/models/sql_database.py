@@ -143,7 +143,7 @@ class SqlDatabase(BaseDatabase):
         # commit
         self.conn.commit()
 
-    def __create_schema_template(self, env, template_name, table_columns):
+    def __create_schema_template(self, env, template_name, table_columns, table_constraints):
         """
         create schema template file
         """
@@ -153,7 +153,8 @@ class SqlDatabase(BaseDatabase):
 
         # apply template
         schema_code = schema_template.render(
-            table_columns=table_columns)
+            table_columns=table_columns,
+            table_constraints=table_constraints)
 
         # build schema path
         schema_target_path = schema_file_path()
@@ -190,15 +191,18 @@ class SqlDatabase(BaseDatabase):
             # convert data type
             data_type = DB_TO_KAM_DATATYPE[udt_name]
 
-            # fille table content
+            # fill table content
             table_content.append(dict(
                 position=position,
                 column=column,
                 nullable=nullable,
                 data_type=data_type))
 
+        # retrieve schema constraints
+        table_constraints = self.dump_constraints()
+
         # create model migration file
-        self.__create_schema_template(env, TEMPLATE_SCHEMA_FILENAME, table_columns)
+        self.__create_schema_template(env, TEMPLATE_SCHEMA_FILENAME, table_columns, table_constraints)
 
     def dump_schema(self):
         """
@@ -225,6 +229,68 @@ class SqlDatabase(BaseDatabase):
 
         # dump schema columns
         self._dump_schema_columns(schema_columns)
+
+    def _dump_schema_constraints(self, schema_constraints):
+        """
+        dump schema constraints
+        """
+
+        # convert schema constraints to table constraints
+        table_constraints = {}
+
+        for table, column, foreign_table, foreign_column in schema_constraints:
+
+            # retrieve table content
+            table_content = table_constraints.get(table, [])
+            table_constraints[table] = table_content
+
+            # fill table content
+            table_content.append(dict(
+                column=column,
+                foreign_table=foreign_table,
+                foreign_column=foreign_column))
+
+        return table_constraints
+
+    def dump_constraints(self):
+        """
+        dump database constraints
+        """
+
+        # query
+        query_constraints = (
+            "SELECT"
+            # + "\n  tc.table_schema,"
+            # + "\n  tc.constraint_name,"
+            + "\n  tc.table_name,"
+            + "\n  kcu.column_name,"
+            # + "\n  ccu.table_schema AS foreign_table_schema,"
+            + "\n  ccu.table_name AS foreign_table_name,"
+            + "\n  ccu.column_name AS foreign_column_name"
+            + "\nFROM"
+            + "\n  information_schema.table_constraints AS tc"
+            + "\n  JOIN information_schema.key_column_usage AS kcu"
+            + "\n    ON tc.constraint_name = kcu.constraint_name"
+            + "\n    AND tc.table_schema = kcu.table_schema"
+            + "\n  JOIN information_schema.constraint_column_usage AS ccu"
+            + "\n    ON ccu.constraint_name = tc.constraint_name"
+            + "\n    AND ccu.table_schema = tc.table_schema"
+            + "\nWHERE tc.constraint_type = 'FOREIGN KEY'"
+            + "\n  AND tc.table_schema = 'public'"
+            + "\n  AND ccu.table_schema = 'public';")
+
+        print()
+        print(query_constraints)
+
+        # select contraints
+        cur = self.conn.cursor()
+        cur.execute(query_constraints)
+
+        # fetch results
+        schema_constraints = cur.fetchall()
+
+        # dump schema columns
+        return self._dump_schema_constraints(schema_constraints)
 
     def migrations_table_exists(self):
 
