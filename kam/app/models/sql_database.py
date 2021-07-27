@@ -241,14 +241,13 @@ class SqlDatabase(BaseDatabase):
         for table, column, foreign_table, foreign_column in schema_constraints:
 
             # retrieve table content
-            table_content = table_constraints.get(table, [])
+            table_content = table_constraints.get(table, {})
             table_constraints[table] = table_content
 
             # fill table content
-            table_content.append(dict(
-                column=column,
+            table_content[column] = dict(
                 foreign_table=foreign_table,
-                foreign_column=foreign_column))
+                foreign_column=foreign_column)
 
         return table_constraints
 

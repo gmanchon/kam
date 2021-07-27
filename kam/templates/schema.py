@@ -9,8 +9,8 @@ def define(self):{% for table_name, columns in table_columns.items() %}
         dict({% for column in columns %}
             {{column["column"]}}="{{column["data_type"]}}",{% endfor %}
             timestamps=True),
-        dict({% for constraint in table_constraints.get(table_name, []) %}
-            {{constraint["column"]}}="{{constraint["foreign_table"]}}",{% endfor %})){% endfor %}
+        dict({% for constraint, content in table_constraints.get(table_name, {}).items() %}
+            {{constraint}}="{{content["foreign_table"]}}",{% endfor %})){% endfor %}
 
 
 ActiveRecordSchema.define(define)
