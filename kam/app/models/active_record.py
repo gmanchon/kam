@@ -48,17 +48,59 @@ class ActiveRecord():
 
     del __load_db_schema  # delete tmp function
 
-    def __init__(self):
+    def __init__(self, **kwargs):
 
         # retrieve db connection
-        self.db = instantiate_db()
+        # self.db = instantiate_db()
+
+        # relations
+        self.one_relation = []
+        self.many_relations = []
+
+        # get child class name
+        child_klass_name = type(self).__name__
+        table_name = klass_name_to_table_name(child_klass_name)
+
+        # retrieve table schema
+        table_schema = ActiveRecordSchema.db_schema[table_name]["columns"]
+        table_constraints = ActiveRecordSchema.db_schema[table_name]["constraints"]
+
+        # # build list of allowed instance variables
+        # unallowed_variables = {"id", "created_at", "updated_at", "timestamps"}
+        # allowed_variables = set(table_schema.keys()) - unallowed_variables
+
+        # iterate through instance variables
+        # for variable in allowed_variables:
+        for variable in table_schema.keys():
+
+            # check if variable was provided to constructor
+            setattr(self, variable, kwargs.get(variable))
+
+        # handle references
+        for constraint, _ in table_constraints.items():
+
+            # check constraint naming
+            if constraint[-3:] != "_id":
+
+                continue
+
+            # get reference
+            reference = constraint[:-3]
+
+            # check if reference is provided
+            if reference in kwargs.keys():
+
+                # check if variable was provided to constructor
+                value = kwargs.get(reference)
+                setattr(self, reference, value)
+                setattr(self, f"{reference}_id", value.id)
 
     # references
     one = {}
     many = {}
 
     @classmethod
-    def __get_model_klass(cls, model_name):
+    def __get_model_klass(self, model_name):
 
         model_sing_name = singularize(model_name) if is_plural(model_name) else model_name
 
@@ -66,7 +108,7 @@ class ActiveRecord():
         klass_name = table_ref_to_klass_name(model_sing_name)
 
         # build module name
-        klass_module_name = ".".join(cls.__module__.split(".")[:-1] + [model_sing_name])
+        klass_module_name = ".".join(self.__module__.split(".")[:-1] + [model_sing_name])
 
         # import module
         klass_module = importlib.import_module(klass_module_name)
@@ -76,36 +118,48 @@ class ActiveRecord():
 
         return model_klass
 
-    @classmethod
-    def belongs_to(cls, model_name, through=None):
+    def belongs_to(self, model_name, through=None):
 
         # get model klass
-        model_klass = cls.__get_model_klass(model_name)
+        model_klass = self.__get_model_klass(model_name)
 
         # store reference
-        child_klass_name = cls.__name__
-        klass_ones = cls.one.get(child_klass_name, {})
+        child_klass_name = type(self).__name__
+        klass_ones = self.one.get(child_klass_name, {})
         klass_ones[model_name] = dict(
             klass=model_klass,
             through=through)
-        cls.one[child_klass_name] = klass_ones
+        self.one[child_klass_name] = klass_ones
 
-    @classmethod
-    def has_many(cls, model_names, through=None):
+        # store relation
+        self.one_relation.append(model_name)
+
+        # add missing method
+        has_many_function = self.__add_missing_method(model_name)
+        setattr(self, model_name, has_many_function)
+
+    def has_many(self, model_names, through=None):
 
         # get model klass
         model_name = singularize(model_names)
-        model_klass = cls.__get_model_klass(model_name)
+        model_klass = self.__get_model_klass(model_name)
 
         # store reference
-        child_klass_name = cls.__name__
-        klass_manys = cls.many.get(child_klass_name, {})
+        child_klass_name = type(self).__name__
+        klass_manys = self.many.get(child_klass_name, {})
         klass_manys[model_names] = dict(
             klass=model_klass,
             through=through)
-        cls.many[child_klass_name] = klass_manys
+        self.many[child_klass_name] = klass_manys
 
-    def __getattr__(self, name):
+        # store relation
+        self.many_relations.append(model_names)
+
+        # add missing method
+        has_many_function = self.__add_missing_method(model_names)
+        setattr(self, model_names, has_many_function)
+
+    def __add_missing_method(self, name):
         """
         handle missing method calls for belongs_to and has_many relationships
         """
@@ -221,7 +275,7 @@ class ActiveRecord():
         print(f"\nreturn matching rows for {kwargs} from {table_name}...")
 
         # retrieve table schema
-        table_schema = ActiveRecordSchema.db_schema[table_name]
+        table_schema = ActiveRecordSchema.db_schema[table_name]["columns"]
 
         # retrieve rows
         matching_rows, target_table = cls.db.select_where(
@@ -245,22 +299,46 @@ class ActiveRecord():
         table_name = klass_name_to_table_name(child_klass_name)
 
         # retrieve table schema
-        table_schema = ActiveRecordSchema.db_schema[table_name]
+        table_schema = ActiveRecordSchema.db_schema[table_name]["columns"]
+        table_constraints = ActiveRecordSchema.db_schema[table_name]["constraints"]
 
         # remove id from columns
-        cols = {k: v for k, v in self.__dict__.items() if k != "id"}
+        ignored_instance_variables = [
+            "id",
+            "one_relation",
+            "many_relations",
+            "timestamps"]
+
+        cols = {k: v for k, v in self.__dict__.items() if k not in ignored_instance_variables and k in table_schema.keys()}
 
         # replace references
         valid_cols = {}
 
         for column, value in cols.items():
 
-            # checking whether value is an active record object (a reference)
-            if issubclass(type(value), ActiveRecord):
+            # ignore one relations
+            if column in self.one_relation:
 
-                # replace the reference by its id
-                column = f"{column}_id"
-                value = value.id
+                continue
+
+            # ignore many relations
+            if column in self.many_relations:
+
+                continue
+
+            # checking whether value is an active record object (a reference)
+            if f"{column}_id" in table_constraints.keys():
+
+                # check if value is an active record
+                if issubclass(type(value), ActiveRecord):
+
+                    # replace the reference by its id
+                    column = f"{column}_id"
+                    value = value.id
+
+                else:
+
+                    continue
 
             # append value
             valid_cols[column] = value
