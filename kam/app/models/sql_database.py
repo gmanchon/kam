@@ -33,6 +33,8 @@ DB_TO_KAM_DATATYPE = dict(
 
 class SqlDatabase(BaseDatabase):
 
+    TIMESTAMP_COLUMNS = ["created_at", "updated_at"]
+
     def __init__(self, params, no_schema=False):
 
         # retrieve params
@@ -525,6 +527,10 @@ class SqlDatabase(BaseDatabase):
 
         for column in columns.keys():
 
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
+
             column_names.append(f"\"{column}\"")
 
         insert_query += ", ".join(column_names)
@@ -534,6 +540,7 @@ class SqlDatabase(BaseDatabase):
 
         # iterate through column values
         column_values = []
+        query_params = []
 
         for index, value in enumerate(columns.values()):
 
@@ -541,11 +548,17 @@ class SqlDatabase(BaseDatabase):
             column = list(columns.keys())[index]
             column_data_type = table_schema[column]
 
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
+
             # fill value
             if column_data_type == "string":
-                column_values.append(f"'{value}'")
+                column_values.append("%s")
+                query_params.append(f"'{value}'")
             elif column_data_type == "integer":
-                column_values.append(f"{value}")
+                column_values.append("%s")
+                query_params.append(value)
 
         insert_query += ", ".join(column_values)
 
@@ -556,7 +569,7 @@ class SqlDatabase(BaseDatabase):
 
         # retrieve migrations
         cur = self.conn.cursor()
-        cur.execute(insert_query)
+        cur.execute(insert_query, query_params)
 
         # retrieve inserted id
         insert_res = cur.fetchone()
@@ -575,17 +588,24 @@ class SqlDatabase(BaseDatabase):
 
         # iterate through columns
         update_rows = []
+        query_params = []
 
         for column, value in columns.items():
+
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
 
             # get column data type
             column_data_type = table_schema[column]
 
             # fill value
             if column_data_type == "string":
-                update_rows.append(f"\n\"{column}\" = '{value}'")
+                update_rows.append(f"\n\"{column}\" = %s")
+                query_params.append(f"'{value}'")
             elif column_data_type == "integer":
-                update_rows.append(f"\n\"{column}\" = {value}")
+                update_rows.append(f"\n\"{column}\" = %s")
+                query_params.append(value)
 
         update_query += ", ".join(update_rows)
 
@@ -596,7 +616,7 @@ class SqlDatabase(BaseDatabase):
 
         # retrieve migrations
         cur = self.conn.cursor()
-        cur.execute(update_query)
+        cur.execute(update_query, query_params)
 
         # commit
         self.conn.commit()
