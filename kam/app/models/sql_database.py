@@ -33,6 +33,8 @@ DB_TO_KAM_DATATYPE = dict(
 
 class SqlDatabase(BaseDatabase):
 
+    TIMESTAMP_COLUMNS = ["created_at", "updated_at"]
+
     def __init__(self, params, no_schema=False):
 
         # retrieve params
@@ -525,6 +527,10 @@ class SqlDatabase(BaseDatabase):
 
         for column in columns.keys():
 
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
+
             column_names.append(f"\"{column}\"")
 
         insert_query += ", ".join(column_names)
@@ -540,6 +546,10 @@ class SqlDatabase(BaseDatabase):
             # get column data type
             column = list(columns.keys())[index]
             column_data_type = table_schema[column]
+
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
 
             # fill value
             if column_data_type == "string":
@@ -577,6 +587,10 @@ class SqlDatabase(BaseDatabase):
         update_rows = []
 
         for column, value in columns.items():
+
+            # skip timestamp columns
+            if column in SqlDatabase.TIMESTAMP_COLUMNS:
+                continue
 
             # get column data type
             column_data_type = table_schema[column]
