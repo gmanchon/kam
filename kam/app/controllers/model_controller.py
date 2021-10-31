@@ -15,12 +15,18 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 DATA_TYPE_STRING = "string"
 DATA_TYPE_TEXT = "text"
 DATA_TYPE_INTEGER = "integer"
+DATA_TYPE_FLOAT = "float"
+DATA_TYPE_BOOLEAN = "boolean"
+DATA_TYPE_DATETIME = "datetime"
 DATA_TYPE_REFERENCES = "references"
 
 SUPPORTED_DATA_TYPES = [
     DATA_TYPE_STRING,
     DATA_TYPE_TEXT,
     DATA_TYPE_INTEGER,
+    DATA_TYPE_FLOAT,
+    DATA_TYPE_BOOLEAN,
+    DATA_TYPE_DATETIME,
     DATA_TYPE_REFERENCES]
 
 TEMPLATE_MIGRATION_FILENAME = "migration.py"

@@ -27,3 +27,9 @@ kam generate model Validation desc:string text:text credit:references
 ``` yaml
 app_directory: app
 ```
+
+# TODO
+
+- [ ] kam generate model: add support for missing data types primary_key, decimal, timestamp, time, date, binary
+- [ ] command to generate config/database.yml
+- [ ] prevent generation of models with reserved fields (updated_at)

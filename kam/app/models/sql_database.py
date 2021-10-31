@@ -25,10 +25,12 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 TEMPLATE_SCHEMA_FILENAME = "schema.py"
 
 DB_TO_KAM_DATATYPE = dict(
-                int8="integer",
                 varchar="string",
                 text="string",
-                timestamptz="string")
+                int8="integer",
+                float8="float",
+                bool="boolean",
+                timestamptz="datetime")
 
 
 class SqlDatabase(BaseDatabase):
@@ -393,6 +395,12 @@ class SqlDatabase(BaseDatabase):
                 statements.append(f"\"{column}\" TEXT NULL")
             elif data_type == "integer":
                 statements.append(f"\"{column}\" BIGINT NULL")
+            elif data_type == "float":
+                statements.append(f"\"{column}\" DOUBLE PRECISION NULL")
+            elif data_type == "boolean":
+                statements.append(f"\"{column}\" BOOLEAN NULL")
+            elif data_type == "datetime":
+                statements.append(f"\"{column}\" TIMESTAMPTZ NULL")
             elif data_type == "references":
                 statements.append(f"{column}_id BIGSERIAL NOT NULL")
             else:
@@ -556,9 +564,9 @@ class SqlDatabase(BaseDatabase):
             column_data_type = table_schema[column]
 
             # fill value
-            if column_data_type == "string":
+            if column_data_type in ["string", "text", "datetime"]:
                 where_clauses.append(f"\n{model_alias}.\"{column}\" = '{value}'")
-            elif column_data_type == "integer":
+            else:  # if column_data_type == "integer":
                 where_clauses.append(f"\n{model_alias}.\"{column}\" = {value}")
 
         # join where clauses
@@ -618,11 +626,11 @@ class SqlDatabase(BaseDatabase):
                 continue
 
             # fill value
-            if column_data_type == "string":
+            if column_data_type in ["string", "text", "datetime"]:
                 column_values.append("%s")
                 # query_params.append(f"'{value}'")
                 query_params.append(value)
-            elif column_data_type == "integer":
+            else:  # if column_data_type == "integer":
                 column_values.append("%s")
                 query_params.append(value)
 
@@ -666,11 +674,11 @@ class SqlDatabase(BaseDatabase):
             column_data_type = table_schema[column]
 
             # fill value
-            if column_data_type == "string":
+            if column_data_type in ["string", "text", "datetime"]:
                 update_rows.append(f"\n\"{column}\" = %s")
                 # query_params.append(f"'{value}'")
                 query_params.append(value)
-            elif column_data_type == "integer":
+            else:  # if column_data_type == "integer":
                 update_rows.append(f"\n\"{column}\" = %s")
                 query_params.append(value)
 
