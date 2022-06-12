@@ -6,7 +6,7 @@ kam generate model            # generate model and migration
 
 kam db:drop                   # drop database
 kam db:create                 # create database
-kam db:migrate                # run migrations
+kam db:migrate                # run migrations (requires `db/__init__.py` and `db/migrate/__init__.py` in project)
 kam db:schema:dump            # generate database schema
 kam db:seed                   # run database seed
 ```
